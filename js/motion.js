@@ -1,0 +1,32 @@
+/* Progressive motion: content is readable without JavaScript or with reduced motion. */
+(()=>{'use strict';
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+const clamp=(v,min=0,max=1)=>Math.min(max,Math.max(min,v));
+const easeOut=v=>1-Math.pow(1-v,3);
+const strip=document.querySelector('.sport-strip');
+const marqueeButton=strip.querySelector('.marquee-toggle');
+marqueeButton.addEventListener('click',()=>{const paused=strip.classList.toggle('is-paused');marqueeButton.setAttribute('aria-pressed',String(paused));marqueeButton.setAttribute('aria-label',paused?'Resume marquee':'Pause marquee');marqueeButton.firstElementChild.textContent=paused?'▶':'Ⅱ'});
+// Word masks preserve nested color spans and explicit line breaks.
+const headings=[...document.querySelectorAll('.hero h1,.section-intro h2,.network-title h2,.signup-intro h2')];
+headings.forEach(heading=>{heading.classList.add('motion-heading');heading.setAttribute('aria-label',heading.innerText.replace(/\s+/g,' ').trim());const walker=document.createTreeWalker(heading,NodeFilter.SHOW_TEXT);const texts=[];while(walker.nextNode())texts.push(walker.currentNode);let order=0;texts.forEach(node=>{const fragment=document.createDocumentFragment();node.textContent.split(/(\s+)/).forEach(word=>{if(!word.trim()){fragment.append(document.createTextNode(word));return}const clip=document.createElement('span');clip.className='word-clip';clip.setAttribute('aria-hidden','true');const inner=document.createElement('span');inner.className='word-inner';inner.style.setProperty('--word-order',order++);inner.textContent=word;clip.append(inner);fragment.append(clip)});node.replaceWith(fragment)})});
+const reveals=[...document.querySelectorAll('.section-intro>p,.section-intro .eyebrow,.sport-copy,.facility-stats>div,.upgrade-list,.network-title>p,.location,.signup-form,.signup-intro>p,.footer-top>div')];
+reveals.forEach((node,index)=>{node.classList.add('motion-reveal');node.style.setProperty('--reveal-delay',`${index%3*90}ms`)});
+let revealObserver;
+function setupReveals(){if(revealObserver)revealObserver.disconnect();const nodes=[...headings,...reveals];nodes.forEach(n=>n.classList.remove('motion-pending'));if(reduce.matches||!('IntersectionObserver'in window))return;revealObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.remove('motion-pending')}else{const rect=entry.boundingClientRect;if(rect.top>=window.innerHeight||rect.bottom<=0)entry.target.classList.add('motion-pending')}})},{threshold:0,rootMargin:'0px 0px -8% 0px'});nodes.forEach(node=>{node.classList.add('motion-pending');revealObserver.observe(node)})}
+// Stats animate once on each visit to the section; readers receive the final values.
+const stats=document.querySelector('.facility-stats');const numbers=[...stats.querySelectorAll('[data-count]')];let countFrame=0,countObserver;
+function finalCounts(){cancelAnimationFrame(countFrame);numbers.forEach(n=>n.querySelector('.count-value').textContent=Number(n.dataset.count).toLocaleString('en-CA'))}
+function startCounts(){cancelAnimationFrame(countFrame);if(reduce.matches){finalCounts();return}let start=null;const tick=time=>{if(start===null)start=time;const p=clamp((time-start)/1700);numbers.forEach((node,i)=>{const step=clamp((p*1.15-i*.05));node.querySelector('.count-value').textContent=Math.round(Number(node.dataset.count)*easeOut(step)).toLocaleString('en-CA')});if(p<1)countFrame=requestAnimationFrame(tick);else finalCounts()};countFrame=requestAnimationFrame(tick)}
+function setupCounts(){if(countObserver)countObserver.disconnect();finalCounts();if(reduce.matches||!('IntersectionObserver'in window))return;let active=false;countObserver=new IntersectionObserver(entries=>{const entry=entries[0];if(entry.isIntersecting&&!active){active=true;startCounts()}else if(!entry.isIntersecting&&active){active=false;finalCounts()}},{threshold:.35});countObserver.observe(stats)}
+// The original Webflow engine owns inner card scale (.7 → 1). This layer only
+// animates the outer card translation and photo parallax, so transforms don't fight.
+const stage=document.querySelector('.hero-stage'),hero=document.querySelector('.hero');
+const cards=[...document.querySelectorAll('.sport-card')];const facilityImage=document.querySelector('.facility-image');let scrollFrame=0;
+function paintScroll(){scrollFrame=0;if(reduce.matches)return;const vh=window.innerHeight;const mobile=window.innerWidth<=760;const stageRect=stage.getBoundingClientRect();const progress=clamp(-stageRect.top/Math.max(1,stage.offsetHeight-vh));hero.style.setProperty('--hero-inset',`${(1-easeOut(progress))*(mobile?12:window.innerWidth*.03)}px`);hero.style.setProperty('--hero-radius',`${(1-easeOut(progress))*(mobile?28:48)}px`);hero.style.setProperty('--hero-zoom',`${1.1-progress*.1}`);
+const measures=cards.map(card=>{const r=card.getBoundingClientRect();const y=card._motionY||0;return {card,rect:{top:r.top-y,bottom:r.bottom-y,height:r.height}}});const imageRect=facilityImage.getBoundingClientRect();
+measures.forEach(({card,rect},i)=>{if(rect.top>vh+250||rect.bottom<-250)return;const entry=1-clamp((vh-rect.top)/(vh*.68));const exit=clamp((-rect.top-rect.height*.48)/(vh*.58));const direction=i%2===0?-1:1;const x=direction*(entry*entry-exit*exit)*(mobile?24:85);const y=(entry*entry-exit*exit)*(mobile?35:65);card._motionY=y;card.style.translate=`${x.toFixed(2)}px ${y.toFixed(2)}px`;const photo=card.querySelector('.sport-visual');const position=clamp((vh-rect.top)/(vh+rect.height));photo.style.setProperty('--image-y',`${(position-.5)*(mobile?22:44)}px`)});
+if(imageRect.top<vh+150&&imageRect.bottom>-150)facilityImage.style.setProperty('--image-y',`${(clamp((vh-imageRect.top)/(vh+imageRect.height))-.5)*65}px`)}
+function queueScroll(){if(!scrollFrame&&!reduce.matches)scrollFrame=requestAnimationFrame(paintScroll)}
+function setup(){setupReveals();setupCounts();if(reduce.matches){cancelAnimationFrame(scrollFrame);scrollFrame=0;cards.forEach(card=>{card.style.removeProperty('translate');card._motionY=0});hero.style.removeProperty('--hero-inset');hero.style.removeProperty('--hero-radius');hero.style.removeProperty('--hero-zoom')}else queueScroll()}
+window.addEventListener('scroll',queueScroll,{passive:true});window.addEventListener('resize',queueScroll,{passive:true});window.addEventListener('pageshow',queueScroll);reduce.addEventListener('change',setup);setup();
+})();

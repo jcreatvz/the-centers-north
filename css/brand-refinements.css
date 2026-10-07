@@ -1,0 +1,78 @@
+@font-face{font-family:'Akira JC';src:url('../fonts/AkirabyJCCleanSupBoldObliqueGW.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
+/* 83% of the prior heading sizes; typography.js fits long words to their columns. */
+h1,h2,h3{font-family:'Akira JC',Satoshi,sans-serif;font-weight:400;font-style:normal;font-synthesis:none;letter-spacing:-.025em;line-height:1.05}
+h2{font-size:clamp(53.12px,5.312vw,86.32px)}
+.hero h1{font-size:clamp(83px,10.375vw,166px);line-height:1.02}
+.hero h1>span{overflow:visible;padding-bottom:.01em}
+.sport-visual h3{font-size:clamp(34.86px,3.818vw,61.42px);line-height:1.05;right:28px;letter-spacing:-.035em}
+.location h3{font-size:35.69px;line-height:1.08}
+.signup h2{font-size:clamp(66.4px,6.64vw,103.75px);line-height:1.05}
+.signup-form h3{font-size:31.54px;line-height:1.12}
+.section-intro>div{min-width:0;flex:1}.section-intro>p{flex:0 1 330px}
+.network{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+.signup{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.location{grid-template-columns:minmax(0,1fr) auto}.location>div{min-width:0}
+/* Allow room for the oblique glyph overhang inside the animated word masks. */
+.word-clip{padding:.16em .2em .13em .08em;margin:-.16em -.2em -.13em -.08em}
+.hero h1,.section-intro h2,.network-title h2,.signup-intro h2{padding-right:.1em}
+.signup{background:#000;color:#fff}
+.signup .eyebrow{color:var(--mint)}
+.signup h2{color:#fff}.signup h2 span{color:inherit}
+.signup h2>span:not(.word-clip){color:var(--mint)}
+.signup-intro>p:not(.eyebrow),.signup .signup-wordmark{color:#c9ded5}
+.signup-form{background:#121b17;border:1px solid #ffffff24;box-shadow:0 30px 65px #0008;color:#fff}
+.signup-form h3{color:#fff}
+.signup-form input:not([type=checkbox]){color:#fff;border-bottom-color:#698075}
+.signup-form input:not([type=checkbox]):focus{background:#ffffff08;border-color:var(--mint)}
+.signup-form input::placeholder{color:#aebfb5}
+.signup-form .interest-options span{border-color:#698075;color:#e3eee8}
+.signup-form .interest-options input:checked+span{background:var(--mint);color:var(--deep);border-color:var(--mint)}
+.signup-form .consent,.signup-form .form-note{color:#c0d3c8}
+.signup-form .consent input{accent-color:var(--mint)}
+.signup-form #form-status{color:#e3eee8;border-color:#698075}
+.signup-form .text-link{color:var(--mint)}
+/* Morph only the paint layer: the text and layout box never skew or move. */
+.button{--button-fill:var(--teal);--button-hover:var(--deep);background:transparent!important;position:relative;isolation:isolate;border-color:transparent;border-radius:999px;box-shadow:none!important;transform:none!important;overflow:visible}
+.button::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:28px;background:var(--button-fill);transform:skewX(0deg) scaleX(1);transition:transform .55s cubic-bezier(.45,0,.2,1),border-radius .55s cubic-bezier(.45,0,.2,1),background .4s,box-shadow .45s;pointer-events:none}
+.button.light{--button-fill:var(--mint);--button-hover:#fff;color:var(--deep)}
+.button.dark{--button-fill:var(--deep);--button-hover:var(--ink);color:#fff}
+.signup .button.dark{--button-fill:var(--mint);--button-hover:#fff;color:var(--deep)}
+.button.light:hover,.signup .button.dark:hover{color:var(--deep)}
+@media(hover:hover) and (pointer:fine){.button:hover::before{border-radius:9px;transform:skewX(-10deg) scaleX(.94);background:var(--button-hover);box-shadow:0 9px 20px #001f1928}}
+.button:focus-visible::before{border-radius:9px;transform:skewX(-10deg) scaleX(.94);background:var(--button-hover)}
+@media(max-width:1050px){.location h3{font-size:29.05px}.sport-visual h3{right:20px}}
+@media(max-width:760px){h2{font-size:53.95px}.hero h1{font-size:clamp(73.87px,17.015vw,120.35px)}.sport-visual h3{font-size:56.44px;right:25px}.location h3{font-size:33.2px}.signup h2{font-size:73.04px}.network,.signup{grid-template-columns:minmax(0,1fr)}.section-intro>p{flex-basis:auto}.signup-form h3{font-size:31.54px}}
+@media(max-width:380px){.location h3{font-size:28.22px}}
+@media(prefers-reduced-motion:reduce){.button::before{transition:none!important}.button:hover::before,.button:focus-visible::before{transform:none}}
+
+/* Final optical reduction is applied after responsive fitting. */
+:root{--headline-optical-scale:.96}
+
+/* Header breathing room and supplied horizontal footer wordmark. */
+.site-header{margin:2rem 0}
+.footer-brand{background:transparent;padding:0;border-radius:0;width:min(100%,260px);display:block}
+.footer-brand img{display:block;width:100%;height:auto;max-width:100%}
+@media(max-width:760px){.site-header{margin:1rem 0}.nav-cta::before{border-radius:22px}}
+
+/* Lightweight sport pictograms retain the seamless marquee geometry. */
+.marquee-sport-icon{display:block;width:38px;height:38px;flex:0 0 38px;color:var(--marquee-color);opacity:.85}
+@media(max-width:760px){.marquee-sport-icon{width:30px;height:30px;flex-basis:30px}}
+/* Supplied brand assets keep their original colors and proportions. */
+.marquee-sport-icon{opacity:1;object-fit:contain}
+.brand img{display:block;aspect-ratio:458.88 / 400.38}
+/* A rounded skewed background keeps location content upright and readable. */
+.location,.location.active,.location:hover{isolation:isolate;overflow:visible;background:transparent;border:0;box-shadow:none;border-radius:20px;padding:30px 38px;position:relative}
+.location::before{content:'';position:absolute;inset:0 14px;z-index:-1;border:1px solid #c7d4ca;border-radius:20px;background:#edf0ea;transform:skewX(-9deg);transition:background .45s var(--motion-ease),border-color .45s,box-shadow .45s;pointer-events:none}
+.location.active::before{background:#e5ede6;border-color:#9ebbad}
+.location:hover,.location:focus-visible{translate:4px 0}
+.location:hover::before,.location:focus-visible::before{background:#dcece2;border-color:var(--teal);box-shadow:0 18px 28px #102b2612}
+.location+.location{margin-top:16px}
+@media(max-width:760px){.location,.location.active,.location:hover{padding:25px 30px}.location::before{transform:skewX(-7deg);border-radius:17px}.location-status{padding:5px 8px}}
+/* The active center gets a white, gently floating card. */
+.location.active::before,.location.active:hover::before,.location.active:focus-visible::before{background:#fff;box-shadow:0 12px 24px #102b2610}
+.location.active{animation:active-center-float 5.8s ease-in-out infinite;animation-play-state:paused}
+.location.active.is-floating{animation-play-state:running}
+.location.active:hover,.location.active:focus-within{animation-play-state:paused}
+@keyframes active-center-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.marquee-sport-icon{transform-origin:50% 50%;will-change:rotate}
+@media(prefers-reduced-motion:reduce){.location.active{animation:none!important;transform:none!important}.marquee-sport-icon{rotate:0deg!important;will-change:auto}}
