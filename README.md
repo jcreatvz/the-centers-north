@@ -45,3 +45,20 @@ Upload this folder to a static web host. For GitHub Pages, select the `main` bra
 Brand SVGs and the Akira JC font were supplied for this project. Photography comes from the existing Centers website; template fonts and scripts come from the supplied Webflow export. Retain the applicable asset and template permissions when reusing this project.
 
 Local asset references, JavaScript syntax, and targeted animation/media behavior have been checked. Desktop and mobile browser visual QA is still required before replacing the public website.
+
+
+## Cards / Orbit presentation (October 14)
+
+The sports section has a visitor-facing Cards / Orbit toggle. Its existing cards are the authoritative source for headings, sport copy, photos and links. The introduction and view controls stay in one shared full-width stage outside the animated panels. View switches neither reparent the heading nor trigger global font resizing. Orbit opens by default on every page load; visitors can switch to Cards. No JavaScript leaves the original cards readable.
+
+- `js/sports-switcher.js` owns the content adapter, lazy loading, accessible tabs and cancellable layout transition.
+- `css/sports-switcher.css` scopes the integrated layout to `#sports`.
+- `orbit/` contains the latest supplied Sport Orbit engine, optimized models and mapped textures bundled in `assets/sport-assets.js`, and the MIT-licensed Three.js runtime.
+- Orbit loads only on first selection. Its selected sport photo crossfades behind the complete orbit with blur and a light overlay; a large clear sport photo appears above the details heading with a bottom-to-top entrance and quick outgoing/incoming copy motion.
+- Hover or keyboard focus previews details. Desktop ball links and Explore links use the existing destinations. Touching a ball selects it; Explore opens the destination.
+- The integrated camera zoom is 1.15 to reserve room for the longer homepage copy and thumbnail; other uploaded motion/model defaults are retained. The stage fills the shared sports section, with dark teal text on white, a teal orbit ring, and a rotated, faded Choose a ball heading on the lower right (hidden at 1024px and below). Mobile stacks the introduction, balls, and details to avoid overlap.
+- Rendering pauses when Cards is active, offscreen or in a hidden tab. Reduced motion skips continuous rendering and entrance motion; selectors and links remain usable without WebGL. Asset-load failure offers Retry and Cards.
+
+Validation: DOM simulations cover shared content/link/image parity, deferred loading, rapid toggle cancellation, default Orbit, stable shared-header ownership and no toggle-induced font refitting, detail animation cancellation, reduced motion, unavailable WebGL and failed assets. Camera projection calculations cover desktop and narrow mobile frames. Local asset references and JavaScript syntax checked. Browser/WebGL visual QA remains unavailable; these checks do not establish actual-device appearance or frame rate.
+
+The original responsive section side padding is retained; at 1700px and up it uses max(5vw, calc((100vw - 1500px)/2)). The shared sports content uses the same gutter inside its full-width stage.

@@ -1,0 +1,20 @@
+{
+  "volleyball": {
+    "originalTriangles": 375000,
+    "triangles": 24000,
+    "vertices": 17279,
+    "simplificationError": 0.0007720122230239213,
+    "originalBytes": 18834739,
+    "optimizedGLBBytes": 888352,
+    "textureBytes": 190066
+  },
+  "basketball": {
+    "originalTriangles": 375000,
+    "triangles": 23998,
+    "vertices": 15442,
+    "simplificationError": 0.0005314387381076813,
+    "originalBytes": 16825205,
+    "optimizedGLBBytes": 789256,
+    "textureBytes": 149734
+  }
+}

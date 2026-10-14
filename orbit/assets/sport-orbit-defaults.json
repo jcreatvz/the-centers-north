@@ -1,0 +1,69 @@
+{
+  "counts": {
+    "pickleball": 1,
+    "volleyball": 1,
+    "basketball": 1
+  },
+  "orbit": 0.72,
+  "spin": 1.5,
+  "scroll": 0.95,
+  "inertia": 1.5,
+  "maxBoost": 2.5,
+  "spacing": 4,
+  "size": 1.15,
+  "intro": "#f5f4ec",
+  "background": "#002124",
+  "glow": true,
+  "introSpin": 0.32,
+  "entranceDuration": 0.8,
+  "splitDuration": 1.1,
+  "transitionSoftness": 0.45,
+  "introZoom": 1.05,
+  "cameraZoom": 1.8,
+  "ringEnabled": true,
+  "ringGlow": true,
+  "ringColor": "#ffffff",
+  "ringThickness": 0.05,
+  "ringOffset": 1.2,
+  "logoSize": 0.8,
+  "logoRotation": 0,
+  "logoX": 0.25,
+  "logoY": 0.5,
+  "introMode": "logo",
+  "introImage": "",
+  "keepBrand": false,
+  "showControls": true,
+  "sports": {
+    "pickleball": {
+      "title": "Pickleball",
+      "description": "Drop in. Find your rally.",
+      "url": "#pickleball",
+      "color": "#7e9400",
+      "newTab": false,
+      "skin": "",
+      "skinBlend": 1,
+      "skinTint": 1
+    },
+    "volleyball": {
+      "title": "Volleyball",
+      "description": "Bring your team.",
+      "url": "#volleyball",
+      "color": "#e7a0a0",
+      "newTab": false,
+      "skin": "",
+      "skinBlend": 0.85,
+      "skinTint": 1
+    },
+    "basketball": {
+      "title": "Basketball",
+      "description": "Make the court yours.",
+      "url": "#basketball",
+      "color": "#dc6326",
+      "newTab": false,
+      "skin": "",
+      "skinBlend": 0.95,
+      "skinTint": 0.65
+    }
+  },
+  "storageKey": "tc-sport-orbit-v5"
+}
