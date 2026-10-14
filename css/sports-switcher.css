@@ -17,6 +17,7 @@
 #sports .sports-view-stage.is-switching>.sports-view-panel:not([hidden]){position:absolute;inset:0 0 auto}
 #sports .sports-view-panel[inert]{pointer-events:none}
 #sports .sports-shared-head{position:relative;z-index:6;min-width:0}
+#sports .sports-shared-head{padding-bottom:2rem}
 #sports .sports-shared-head .section-intro{margin-bottom:28px}
 #sports.sports-enhanced .sports-shared-head{padding:72px var(--sports-gutter) 0}
 #sports.sports-enhanced .section-intro h2{color:#094742;font-size:clamp(32px,4.8vw,76px);line-height:1.06}

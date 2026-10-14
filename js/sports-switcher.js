@@ -165,6 +165,7 @@
     tabs.forEach(tab => { const selected = tab.dataset.sportsView === view; tab.setAttribute('aria-selected', String(selected)); tab.tabIndex = selected ? 0 : -1; });
     if (outgoing.contains(document.activeElement)) tabs.find(tab => tab.dataset.sportsView === next).focus();
     outgoing.inert = true; incoming.hidden = false; incoming.inert = false;
+    if (next === 'cards') requestAnimationFrame(() => window.dispatchEvent(new Event('centerssports:viewchange')));
     orbit?.setSuspended(view !== 'orbit');
     stage.style.height = fromHeight + 'px'; stage.classList.add('is-switching');
     const toHeight = incoming.getBoundingClientRect().height;

@@ -11,9 +11,13 @@
     }
     return[h,h.textContent.trim().split(/\s+/)];
   }));
-  function fit(){
-    headings.forEach(h=>h.style.removeProperty('font-size'));
-    const results=headings.map(h=>{
+  function fit(targets=headings){
+    // Orbit is the initial tab, so its Cards panel may be display:none when the
+    // custom font resolves. Keep hidden headings untouched and refit them when
+    // the Cards panel opens at its real width.
+    const visible=targets.filter(h=>h.getClientRects().length>0);
+    visible.forEach(h=>h.style.removeProperty('font-size'));
+    const results=visible.map(h=>{
       const css=getComputedStyle(h),size=parseFloat(css.fontSize);
       context.font=`${css.fontStyle} ${css.fontWeight} ${size}px ${css.fontFamily}`;
       const spacing=parseFloat(css.letterSpacing)||0;
@@ -28,4 +32,8 @@
   let frame=0;function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;fit()})}
   document.fonts.load('40px "Akira JC"').then(()=>{fit();window.dispatchEvent(new Event('resize'))});
   window.addEventListener('resize',schedule,{passive:true});window.addEventListener('pageshow',schedule);
+  window.addEventListener('centerssports:viewchange',()=>{
+    const cards=headings.filter(h=>h.closest('.sport-card'));
+    if(cards.length)fit(cards);
+  });
 })();
