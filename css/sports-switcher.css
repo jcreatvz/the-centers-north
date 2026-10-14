@@ -26,7 +26,7 @@
 #sports.sports-enhanced .sports-view-tabs{background:#eef4f0;border-color:#09474230;backdrop-filter:blur(12px)}
 #sports.sports-enhanced .sports-view-tabs button{color:#094742}
 #sports.sports-enhanced .sports-view-tabs button[aria-selected=true]{background:#094742;color:#fff}
-#sports.sports-enhanced .sports-view-controls{margin-bottom:0}
+#sports.sports-enhanced .sports-view-controls{margin-bottom:2rem}
 #sports .sports-orbit-home{height:auto;min-height:0;border-radius:0;overflow:clip;background:#fff;color:#094742;font-family:Satoshi,Arial,sans-serif;width:100%}
 #sports .sports-orbit-home .so-stage{position:relative;top:auto;height:auto;min-height:700px;display:grid;grid-template-rows:minmax(700px,1fr);background:#fff}
 #sports .sports-orbit-home .so-stage:before{z-index:1;background:radial-gradient(ellipse at 76% 60%,#c4eee038,transparent 60%);opacity:1}
