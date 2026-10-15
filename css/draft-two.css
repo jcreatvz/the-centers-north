@@ -7,7 +7,7 @@ html{scroll-padding-top:100px}
 .kinetic-logo{display:block;width:100%;height:100%;overflow:visible}
 .kinetic-logo [id]{transform-box:fill-box;transform-origin:center;transition:transform .7s var(--v2-ease),opacity .4s}
 .is-compact .brand{width:60px;height:60px}
-.is-compact #iconmark{transform:translateY(65px) scale(1.38)}
+.is-compact #iconmark{transform:translate(1px,65px) scale(1.08)}
 .kinetic-logo #themark,.kinetic-logo #centersmark,.kinetic-logo #northpill,.kinetic-logo #northmark{transition:none}
 .is-compact #swoopball{transform:translate(3px,-3px) rotate(-12deg)}
 .brand:hover #swoopball{transform:translate(10px,-7px) rotate(12deg)}
