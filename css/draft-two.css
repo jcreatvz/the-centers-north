@@ -8,7 +8,7 @@ html{scroll-padding-top:100px}
 .kinetic-logo [id]{transform-box:fill-box;transform-origin:center;transition:transform .7s var(--v2-ease),opacity .4s}
 .is-compact .brand{width:60px;height:60px}
 .is-compact #iconmark{transform:translateY(65px) scale(1.38)}
-.is-compact #themark,.is-compact #centersmark,.is-compact #northpill{opacity:0;transform:translateY(30px) scale(.85)}
+.kinetic-logo #themark,.kinetic-logo #centersmark,.kinetic-logo #northpill,.kinetic-logo #northmark{transition:none}
 .is-compact #swoopball{transform:translate(3px,-3px) rotate(-12deg)}
 .brand:hover #swoopball{transform:translate(10px,-7px) rotate(12deg)}
 .signup{position:relative;isolation:isolate;background:#1a1a1a}
@@ -23,10 +23,7 @@ html{scroll-padding-top:100px}
 @media(max-width:1050px){
  .desktop-nav{display:none}
  .site-header{gap:18px}
- .menu-toggle{display:flex;position:relative;z-index:3;align-items:center;justify-content:center;flex:none;gap:10px;width:88px;height:48px;border:0;padding:0;background:transparent;color:var(--ink);cursor:pointer}
- .menu-label{height:20px;overflow:hidden;font-size:12px;font-weight:700;line-height:20px}
- .menu-label b{display:block;font-weight:inherit;transition:transform .45s var(--v2-ease)}
- .menu-toggle[aria-expanded=true] .menu-label b{transform:translateY(-100%)}
+ .menu-toggle{display:flex;position:relative;z-index:3;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border:0;padding:0;background:transparent;color:var(--ink);cursor:pointer}
  .menu-lines{position:relative;width:24px;height:24px;display:block;transition:transform .6s var(--v2-ease)}
  .menu-lines::before,.menu-lines::after{content:'';position:absolute;left:0;top:8px;width:24px;height:2px;background:currentColor;transition:transform .6s var(--v2-ease),top .6s var(--v2-ease)}
  .menu-lines::after{top:14px}
@@ -42,5 +39,5 @@ html{scroll-padding-top:100px}
  .site-header.menu-open .nav-cta{visibility:hidden}
  .site-header.menu-open{background:transparent;box-shadow:none}
 }
-@media(max-width:760px){.site-header{height:80px}.site-header.is-compact{height:68px}.brand{height:64px;width:74px}.is-compact .brand{height:52px;width:52px}.nav-cta{margin-left:auto}.menu-toggle{width:76px}.site-header{gap:10px}.mobile-nav a{font-size:clamp(28px,7vw,48px)}}
+@media(max-width:760px){.site-header{height:80px}.site-header.is-compact{height:68px}.brand{height:64px;width:74px}.is-compact .brand{height:52px;width:52px}.nav-cta{margin-left:auto}.site-header{gap:10px}.mobile-nav a{font-size:clamp(28px,7vw,48px)}}
 @media(prefers-reduced-motion:reduce){.signup::before{transform:none}.kinetic-logo [id]{transition:none}}

@@ -4,7 +4,7 @@
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const header=document.querySelector('.site-header'), signup=document.querySelector('.signup');
  const toggle=header.querySelector('.menu-toggle'), menu=header.querySelector('.mobile-nav');
- toggle.innerHTML='<i class="menu-label" aria-hidden="true"><b>Menu</b><b>Close</b></i><i class="menu-lines" aria-hidden="true"></i>';
+ toggle.innerHTML='<i class="menu-lines" aria-hidden="true"></i>';
  const links=[...menu.querySelectorAll('a')];
  links.forEach((link,i)=>link.style.setProperty('--i',i));
  let open=false,closeTimer,oldOverflow='',raf=0;
@@ -36,11 +36,41 @@
      event.preventDefault();focusable[i].focus();
    }
  });
+ // One reversible timeline: returning to the top resumes from the current frame.
+ const logoDuration=1100;
+ const logoParts=[
+   ['themark',-65,0,.36],
+   ['centersmark',100,.16,.54],
+   ['northpill',100,.36,.74],
+   ['northmark',55,.66,1]
+ ].map(([id,x,start,end])=>{
+   const hidden={opacity:0,transform:`translateX(${x}px)`,clipPath:x<0?'inset(0 100% 0 0)':'inset(0 0 0 100%)',easing:'cubic-bezier(.22,1,.36,1)'};
+   const shown={opacity:1,transform:'translateX(0px)',clipPath:'inset(0 0 0 0)'};
+   const frames=[{...hidden,offset:0}];
+   if(start>0)frames.push({...hidden,offset:start});
+   frames.push({...shown,offset:end});
+   if(end<1)frames.push({...shown,offset:1});
+   const animation=header.querySelector('#'+id).animate(frames,{duration:logoDuration,fill:'both',easing:'linear'});
+   animation.pause();animation.currentTime=0;
+   return animation;
+ });
+ let logoExpanded=null;
+ function setLogo(expanded,force=false){
+   if(logoExpanded===expanded&&!force)return;
+   logoExpanded=expanded;
+   header.classList.toggle('is-compact',!expanded);
+   logoParts.forEach(animation=>{
+     if(reduced.matches){animation.pause();animation.currentTime=expanded?logoDuration:0;return}
+     if((!expanded&&animation.currentTime<=0)||(expanded&&animation.currentTime>=logoDuration)){animation.pause();return}
+     animation.updatePlaybackRate(expanded?1:-1);
+     animation.play();
+   });
+ }
  function update(){
    raf=0;
-   // Hysteresis prevents toggling around the sticky threshold.
-   if(scrollY>110)header.classList.add('is-compact');
-   else if(scrollY<40)header.classList.remove('is-compact');
+   // A small deadband avoids jitter; the full logo returns only at the page top.
+   if(scrollY>8)setLogo(false);
+   else if(scrollY<=1)setLogo(true);
    const rect=signup.getBoundingClientRect();
    if(!reduced.matches&&rect.top<innerHeight&&rect.bottom>0){
      const y=Math.max(-65,Math.min(65,(innerHeight/2-rect.top-rect.height/2)*.1));
@@ -50,10 +80,11 @@
  function schedule(){if(!raf)raf=requestAnimationFrame(update)}
  addEventListener('scroll',schedule,{passive:true});
  addEventListener('resize',()=>{if(innerWidth>1050)setMenu(false);schedule()},{passive:true});
- reduced.addEventListener('change',()=>{signup.style.removeProperty('--pattern-y');schedule()});
+ reduced.addEventListener('change',()=>{signup.style.removeProperty('--pattern-y');setLogo(logoExpanded,true);schedule()});
+ if(scrollY>1)setLogo(false);
  update();
- if(!reduced.matches&&scrollY<40){
-   ['swoop','swoopball','themark','centersmark','northpill','northmark'].forEach((id,i)=>{
+ if(!reduced.matches&&scrollY<=1){
+   ['swoop','swoopball'].forEach((id,i)=>{
      const el=header.querySelector('#'+id);
      el.animate([{opacity:0,transform:`translate(${id==='swoopball'?45:-20}px,${id==='swoopball'?-35:20}px) rotate(-8deg)`},{opacity:1,transform:'none'}],{duration:850,delay:i*85,fill:'backwards',easing:'cubic-bezier(.22,1,.36,1)'});
    });
