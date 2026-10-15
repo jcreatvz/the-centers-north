@@ -37,12 +37,13 @@
    }
  });
  // One reversible timeline: returning to the top resumes from the current frame.
- const logoDuration=1300;
+ const logoDuration=1650;
  const logoParts=[
-   ['themark',-65,.12,.40],
-   ['centersmark',100,.27,.58],
-   ['northpill',100,.48,.78],
-   ['northmark',55,.68,.88]
+   ['swoop',-90,0,.15],
+   ['themark',-65,.26,.48],
+   ['centersmark',100,.40,.65],
+   ['northpill',100,.55,.78],
+   ['northmark',55,.70,.87]
  ].map(([id,x,start,end])=>{
    const hidden={opacity:0,transform:`translateX(${x}px)`,clipPath:x<0?'inset(0 100% 0 0)':'inset(0 0 0 100%)',easing:'cubic-bezier(.22,1,.36,1)'};
    const shown={opacity:1,transform:'translateX(0px)',clipPath:'inset(0 0 0 0)'};
@@ -54,12 +55,22 @@
    animation.pause();animation.currentTime=0;
    return animation;
  });
- const pathFrames=[
+ const capFrames=[
    {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:0},
-   {opacity:0,transform:'translateX(-36px)',clipPath:'inset(0 100% 0 0)',offset:.11,easing:'cubic-bezier(.22,1,.36,1)'},
-   {opacity:0,transform:'translateX(-36px)',clipPath:'inset(0 100% 0 0)',offset:.88},
-   {opacity:0,transform:'translateX(36px)',clipPath:'inset(0 0 0 100%)',offset:.90},
+   {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:.16},
+   {opacity:0,transform:'translateX(-30px)',clipPath:'inset(0 100% 0 0)',offset:.23,easing:'cubic-bezier(.22,1,.36,1)'},
+   {opacity:0,transform:'translateX(-30px)',clipPath:'inset(0 100% 0 0)',offset:.86},
+   {opacity:0,transform:'translateX(30px)',clipPath:'inset(0 0 0 100%)',offset:.90},
    {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:1,easing:'cubic-bezier(.22,1,.36,1)'}
+ ];
+ const capAnimation=header.querySelector('#icon-swoop-cap').animate(capFrames,{duration:logoDuration,fill:'both',easing:'linear'});
+ capAnimation.pause();capAnimation.currentTime=0;logoParts.push(capAnimation);
+ const pathFrames=[
+   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:0},
+   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:.16},
+   {opacity:0,transform:'translateY(30px)',clipPath:'inset(100% 0 0 0)',offset:.23,easing:'cubic-bezier(.22,1,.36,1)'},
+   {opacity:0,transform:'translateY(-30px)',clipPath:'inset(100% 0 0 0)',offset:.90},
+   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:1,easing:'cubic-bezier(.22,1,.36,1)'}
  ];
  const pathAnimation=header.querySelector('#icon-swoop-path').animate(pathFrames,{duration:logoDuration,fill:'both',easing:'linear'});
  pathAnimation.pause();pathAnimation.currentTime=0;logoParts.push(pathAnimation);
@@ -93,7 +104,7 @@
  if(scrollY>1)setLogo(false);
  update();
  if(!reduced.matches&&scrollY<=1){
-   ['swoop','swoopball'].forEach((id,i)=>{
+   ['swoopball'].forEach((id,i)=>{
      const el=header.querySelector('#'+id);
      el.animate([{opacity:0,transform:`translate(${id==='swoopball'?45:-20}px,${id==='swoopball'?-35:20}px) rotate(-8deg)`},{opacity:1,transform:'none'}],{duration:850,delay:i*85,fill:'backwards',easing:'cubic-bezier(.22,1,.36,1)'});
    });
