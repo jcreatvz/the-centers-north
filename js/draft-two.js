@@ -36,58 +36,76 @@
      event.preventDefault();focusable[i].focus();
    }
  });
- // One reversible timeline: returning to the top resumes from the current frame.
- const logoDuration=1650;
- const logoParts=[
-   ['themark',-65,.26,.48],
-   ['centersmark',100,.40,.65],
-   ['northpill',100,.55,.78],
-   ['northmark',55,.70,.87]
- ].map(([id,x,start,end])=>{
-   const hidden={opacity:0,transform:`translateX(${x}px)`,clipPath:x<0?'inset(0 100% 0 0)':'inset(0 0 0 100%)',easing:'cubic-bezier(.22,1,.36,1)'};
-   const shown={opacity:1,transform:'translateX(0px)',clipPath:'inset(0 0 0 0)'};
-   const frames=[{...hidden,offset:0}];
-   if(start>0)frames.push({...hidden,offset:start});
-   frames.push({...shown,offset:end});
-   if(end<1)frames.push({...shown,offset:1});
-   const animation=header.querySelector('#'+id).animate(frames,{duration:logoDuration,fill:'both',easing:'linear'});
-   animation.pause();animation.currentTime=0;
-   return animation;
- });
- const capFrames=[
-   {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:0},
-   {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:.16},
-   {opacity:0,transform:'translateX(-30px)',clipPath:'inset(0 0 0 100%)',offset:.23,easing:'cubic-bezier(.22,1,.36,1)'},
-   {opacity:0,transform:'translateX(-30px)',clipPath:'inset(0 0 0 100%)',offset:.86},
-   {opacity:0,transform:'translateX(-30px)',clipPath:'inset(0 0 0 100%)',offset:.90},
-   {opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)',offset:1,easing:'cubic-bezier(.22,1,.36,1)'}
- ];
- const capAnimation=header.querySelector('#icon-swoop-cap').animate(capFrames,{duration:logoDuration,fill:'both',easing:'linear'});
- capAnimation.pause();capAnimation.currentTime=0;logoParts.push(capAnimation);
- const pathFrames=[
-   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:0},
-   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:.16},
-   {opacity:0,transform:'translateY(30px)',clipPath:'inset(0 0 100% 0)',offset:.23,easing:'cubic-bezier(.22,1,.36,1)'},
-   {opacity:0,transform:'translateY(30px)',clipPath:'inset(0 0 100% 0)',offset:.90},
-   {opacity:1,transform:'translateY(0)',clipPath:'inset(0 0 0 0)',offset:1,easing:'cubic-bezier(.22,1,.36,1)'}
- ];
- const pathAnimation=header.querySelector('#icon-swoop-path').animate(pathFrames,{duration:logoDuration,fill:'both',easing:'linear'});
- pathAnimation.pause();pathAnimation.currentTime=0;logoParts.push(pathAnimation);
+ // Each state owns its animations; interrupted scrolls start at the visible frame.
+ const brand=header.querySelector('.brand');
+ const ids=['themark','centersmark','northpill','northmark','swoop','swoopball','icon-swoop-cap','icon-swoop-path'];
+ const parts=Object.fromEntries(ids.map(id=>[id,header.querySelector('#'+id)]));
+ const active=new Set();
+ const ease='cubic-bezier(.22,1,.36,1)';
+ const shown={opacity:1,transform:'translate(0px,0px)',clipPath:'inset(0 0 0 0)'};
+ const hidden=(x,y=0)=>({opacity:0,transform:`translate(${x}px,${y}px)`,clipPath:'inset(0 0 0 0)'});
+ const snapshot=el=>{const s=getComputedStyle(el);return {opacity:s.opacity,transform:s.transform,clipPath:s.clipPath}};
+ function stopLogo(){
+   const current=Object.fromEntries(ids.map(id=>[id,snapshot(parts[id])]));
+   active.forEach(a=>a.cancel());active.clear();
+   ids.forEach(id=>Object.assign(parts[id].style,current[id]));
+ }
+ function motion(id,frames,duration,delay=0){
+   const el=parts[id],last=frames[frames.length-1];
+   ['opacity','transform','clipPath'].forEach(key=>{if(key in last)el.style[key]=last[key]});
+   if(reduced.matches)return;
+   const a=el.animate(frames,{duration,delay,easing:'linear',fill:'both'});
+   active.add(a);
+   a.onfinish=()=>{active.delete(a);a.cancel()};
+ }
+ function slide(id,to,duration,delay=0){motion(id,[{...snapshot(parts[id]),easing:ease},to],duration,delay)}
+ // Start and finish at contact. Two positive arcs avoid jumping or crossing the swoop.
+ function bounce(delay=0,distance=24){
+   motion('swoopball',[
+     {...shown,offset:0,easing:'cubic-bezier(.2,.7,.3,1)'},
+     {...shown,transform:`translateX(${distance}px)`,offset:.36,easing:'cubic-bezier(.55,0,.8,.35)'},
+     {...shown,offset:.68,easing:'cubic-bezier(.2,.7,.3,1)'},
+     {...shown,transform:`translateX(${distance*.18}px)`,offset:.83,easing:'cubic-bezier(.55,0,.8,.35)'},
+     {...shown,offset:1}
+   ],840,delay);
+ }
  let logoExpanded=null;
  function setLogo(expanded,force=false){
    if(logoExpanded===expanded&&!force)return;
-   logoExpanded=expanded;
+   stopLogo();logoExpanded=expanded;
    header.classList.toggle('is-compact',!expanded);
-   logoParts.forEach(animation=>{
-     if(reduced.matches){animation.pause();animation.currentTime=expanded?logoDuration:0;return}
-     if((!expanded&&animation.currentTime<=0)||(expanded&&animation.currentTime>=logoDuration)){animation.pause();return}
-     animation.updatePlaybackRate(expanded?1:-1);
-     animation.play();
-   });
+   // The ball and swoop inherit exactly the same iconmark resize transform.
+   Object.assign(parts.swoopball.style,shown);
+   Object.assign(parts.swoop.style,shown);
+   if(expanded){
+     ['icon-swoop-cap','icon-swoop-path'].forEach(id=>slide(id,shown,280));
+     [['themark',720],['centersmark',980],['northpill',1240],['northmark',1500]].forEach(([id,delay])=>slide(id,shown,450,delay));
+     bounce(1860);
+   }else{
+     [['themark',-48,120],['centersmark',60,340],['northpill',60,560],['northmark',60,780]].forEach(([id,x,delay])=>slide(id,hidden(x),340,delay));
+     [['icon-swoop-cap',hidden(-35)],['icon-swoop-path',hidden(0,34)]].forEach(([id,away])=>motion(id,[
+       {...snapshot(parts[id]),offset:0,easing:ease},
+       {...away,offset:.2}, {...away,offset:.75,easing:ease}, {...shown,offset:1}
+     ],2250));
+     motion('swoopball',[{...shown,offset:0,easing:ease},{...shown,transform:'translateX(38px)',offset:.65,easing:ease},{...shown,offset:1}],550,1120);
+   }
  }
+ function intro(){
+   logoExpanded=true;header.classList.remove('is-compact');
+   [['icon-swoop-path',hidden(0,36),550,0],['swoop',hidden(-70),620,160],['themark',hidden(-48),480,320],['centersmark',hidden(60),500,680],['northpill',hidden(60),480,1000],['northmark',hidden(60),420,1280],['icon-swoop-cap',hidden(60),480,1390]].forEach(([id,from,duration,delay])=>motion(id,[{...from,easing:ease},shown],duration,delay));
+   motion('swoopball',[
+     {...hidden(-64),offset:0,easing:'cubic-bezier(.45,0,.7,.25)'},
+     {...shown,transform:'translateX(54px)',offset:.48,easing:'cubic-bezier(.18,.78,.28,1)'},
+     {...shown,transform:'translateX(61px)',offset:.66,easing:'cubic-bezier(.35,0,.65,1)'},
+     {...shown,offset:.84}, {...shown,offset:1}
+   ],920,620);
+ }
+ brand.addEventListener('pointerenter',event=>{
+   if(event.pointerType==='touch'||reduced.matches||active.size)return;
+   bounce(0,18);
+ });
  function update(){
    raf=0;
-   // A small deadband avoids jitter; the full logo returns only at the page top.
    if(scrollY>8)setLogo(false);
    else if(scrollY<=1)setLogo(true);
    const rect=signup.getBoundingClientRect();
@@ -100,14 +118,8 @@
  addEventListener('scroll',schedule,{passive:true});
  addEventListener('resize',()=>{if(innerWidth>1050)setMenu(false);schedule()},{passive:true});
  reduced.addEventListener('change',()=>{signup.style.removeProperty('--pattern-y');setLogo(logoExpanded,true);schedule()});
- if(scrollY>1)setLogo(false);
+ if(scrollY<=1)intro();else setLogo(false);
  update();
- if(!reduced.matches&&scrollY<=1){
-   ['swoop'].forEach((id,i)=>{
-     const el=header.querySelector('#'+id);
-     el.animate([{opacity:0,transform:'translateX(-90px)',clipPath:'inset(0 100% 0 0)'},{opacity:1,transform:'translateX(0)',clipPath:'inset(0 0 0 0)'}],{duration:620,fill:'both',easing:'cubic-bezier(.22,1,.36,1)'});
-   });
- }
  document.querySelectorAll('.upgrade-list details').forEach(details=>{
    const summary=details.querySelector('summary'),content=details.querySelector('ul');
    let animation=null,contentAnimation=null,target=details.open;
