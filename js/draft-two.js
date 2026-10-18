@@ -139,3 +139,27 @@
    });
  });
 })();
+
+// Explicit scrolling avoids the empty-fragment link intercepted by Webflow.
+(()=>{
+ const button=document.querySelector('.back-top');if(!button)return;
+ let raf=0,restore=null;
+ function cancel(){
+   cancelAnimationFrame(raf);raf=0;
+   if(restore!==null){document.documentElement.style.scrollBehavior=restore;restore=null}
+   button.classList.remove('is-running');
+   removeEventListener('wheel',cancel);removeEventListener('touchstart',cancel);removeEventListener('keydown',interrupt);
+ }
+ function interrupt(event){if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(event.key))cancel()}
+ button.addEventListener('click',()=>{
+   cancel();const from=scrollY,reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+   restore=document.documentElement.style.scrollBehavior;document.documentElement.style.scrollBehavior='auto';
+   const finish=()=>{window.scrollTo({top:0,left:0,behavior:'instant'});cancel();document.querySelector('.brand')?.focus({preventScroll:true})};
+   if(reduced||from<2){finish();return}
+   button.classList.add('is-running');
+   addEventListener('wheel',cancel,{passive:true});addEventListener('touchstart',cancel,{passive:true});addEventListener('keydown',interrupt);
+   const start=performance.now(),duration=Math.min(950,Math.max(550,450+Math.sqrt(from)*8));
+   function tick(now){const t=Math.min(1,(now-start)/duration);window.scrollTo({top:from*Math.pow(1-t,3),left:0,behavior:'instant'});if(t<1)raf=requestAnimationFrame(tick);else finish()}
+   raf=requestAnimationFrame(tick);
+ });
+})();

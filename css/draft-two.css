@@ -41,3 +41,22 @@ html{scroll-padding-top:100px}
 }
 @media(max-width:760px){.site-header{height:80px}.site-header.is-compact{height:68px}.brand{height:64px;width:74px}.is-compact .brand{height:52px;width:52px}.nav-cta{margin-left:auto}.site-header{gap:10px}.mobile-nav a{font-size:clamp(28px,7vw,48px)}}
 @media(prefers-reduced-motion:reduce){.signup::before{transform:none}.kinetic-logo [id]{transition:none}}
+
+/* Location spacing and selected badge; sizes are the previous values / 1.25. */
+.location-list h3{font-size:28.552px}
+.location,.location.active,.location:hover{padding-inline:47.5px}
+.location.active .location-status{display:inline-flex;align-items:center;white-space:nowrap;background:var(--deep);border-color:var(--deep);color:white}
+.location.active .location-status::before{content:'';width:6px;height:6px;flex:none;border-radius:50%;background:currentColor;margin-right:7px;animation:location-dot 1.8s linear infinite;animation-play-state:paused}
+.location.active.is-floating .location-status::before{animation-play-state:running}
+@keyframes location-dot{0%,44%,100%{transform:translateY(0)}12%{transform:translateY(-5px);animation-timing-function:cubic-bezier(.55,0,.85,.4)}24%{transform:translateY(0);animation-timing-function:cubic-bezier(.2,.7,.3,1)}33%{transform:translateY(-2px);animation-timing-function:cubic-bezier(.55,0,.85,.4)}}
+.so-ball-tag .so-arrow{display:none!important}
+.footer .back-top{display:inline-flex!important;align-items:center;justify-content:center;gap:12px;width:max-content;max-width:100%;padding:10px 14px;border:1px solid #ffffff45;border-radius:99px;color:inherit;background:transparent;font:inherit;font-size:14px;cursor:pointer;transition:background .25s,translate .35s var(--v2-ease)}
+.footer .back-top:hover,.footer .back-top:focus-visible{background:#ffffff14;translate:0 -2px}
+.back-top svg{width:18px;height:24px;flex:none;overflow:visible}.back-top path{transform-box:fill-box;transform-origin:center}
+.back-top:hover path,.back-top:focus-visible path,.back-top.is-running path{animation:top-chevron .65s cubic-bezier(.22,1,.36,1) infinite}
+.back-top path:first-child{animation-delay:.07s}
+@keyframes top-chevron{0%,100%{transform:translateY(0);opacity:.65}45%{transform:translateY(-4px);opacity:1}}
+@media(max-width:1050px){.location-list h3{font-size:23.24px}}
+@media(max-width:760px){.location-list h3{font-size:26.56px}.location,.location.active,.location:hover{padding-inline:37.5px}.footer-brand{justify-self:center;margin-inline:auto;grid-column:1/-1}}
+@media(max-width:380px){.location-list h3{font-size:22.576px}}
+@media(prefers-reduced-motion:reduce){.location.active .location-status::before,.back-top path{animation:none!important}.footer .back-top{transition:none}}
