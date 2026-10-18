@@ -50,13 +50,15 @@ html{scroll-padding-top:100px}
 .location.active.is-floating .location-status::before{animation-play-state:running}
 @keyframes location-dot{0%,44%,100%{transform:translateY(0)}12%{transform:translateY(-5px);animation-timing-function:cubic-bezier(.55,0,.85,.4)}24%{transform:translateY(0);animation-timing-function:cubic-bezier(.2,.7,.3,1)}33%{transform:translateY(-2px);animation-timing-function:cubic-bezier(.55,0,.85,.4)}}
 .so-ball-tag .so-arrow{display:none!important}
-.footer .back-top{display:inline-flex!important;align-items:center;justify-content:center;gap:12px;width:max-content;max-width:100%;padding:10px 14px;border:1px solid #ffffff45;border-radius:99px;color:inherit;background:transparent;font:inherit;font-size:14px;cursor:pointer;transition:background .25s,translate .35s var(--v2-ease)}
-.footer .back-top:hover,.footer .back-top:focus-visible{background:#ffffff14;translate:0 -2px}
+.footer .back-top{display:inline-flex!important;align-items:center;justify-content:center;gap:12px;width:max-content;max-width:100%;position:relative;isolation:isolate;padding:10px 14px;border:0;border-radius:99px;color:inherit;background:transparent;font:inherit;font-size:14px;cursor:pointer;transition:padding .35s var(--v2-ease),translate .35s var(--v2-ease)}
+.footer .back-top::before{content:'';position:absolute;inset:0;z-index:-1;border:1px solid #ffffff45;border-radius:99px;transition:transform .35s var(--v2-ease),border-radius .35s var(--v2-ease),background .25s}
+.footer .back-top:hover,.footer .back-top:focus-visible{padding-inline:26px;translate:0 -2px}
+.footer .back-top:hover::before,.footer .back-top:focus-visible::before{transform:skewX(-12deg);border-radius:7px;background:#ffffff14}
 .back-top svg{width:18px;height:24px;flex:none;overflow:visible}.back-top path{transform-box:fill-box;transform-origin:center}
-.back-top:hover path,.back-top:focus-visible path,.back-top.is-running path{animation:top-chevron .65s cubic-bezier(.22,1,.36,1) infinite}
+.back-top path{animation:top-chevron .65s cubic-bezier(.22,1,.36,1) infinite}
 .back-top path:first-child{animation-delay:.07s}
 @keyframes top-chevron{0%,100%{transform:translateY(0);opacity:.65}45%{transform:translateY(-4px);opacity:1}}
-@media(max-width:1050px){.location-list h3{font-size:23.24px}}
+@media(max-width:1050px){.location-list h3{font-size:23.24px}.signup-form h3{font-size:25.232px}.footer .back-top{grid-column:1/-1;justify-self:center;margin-inline:auto}}
 @media(max-width:760px){.location-list h3{font-size:26.56px}.location,.location.active,.location:hover{padding-inline:37.5px}.footer-brand{justify-self:center;margin-inline:auto;grid-column:1/-1}}
 @media(max-width:380px){.location-list h3{font-size:22.576px}}
-@media(prefers-reduced-motion:reduce){.location.active .location-status::before,.back-top path{animation:none!important}.footer .back-top{transition:none}}
+@media(prefers-reduced-motion:reduce){.location.active .location-status::before,.back-top path{animation:none!important}.footer .back-top,.footer .back-top::before{transition:none}}

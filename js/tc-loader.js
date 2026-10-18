@@ -29,70 +29,33 @@
    [white,cover].forEach(rect=>{rect.setAttribute('width',w);rect.setAttribute('height',h)});
    cutout.setAttribute('width',w);cutout.setAttribute('height',h);
  }
- function silhouette(source){
-   const copy=source.cloneNode(true),originals=[...source.querySelectorAll('path,rect,circle,ellipse,polygon,polyline,line,text')];
-   const copies=[...copy.querySelectorAll('path,rect,circle,ellipse,polygon,polyline,line,text')];
-   copies.forEach((node,i)=>{
-     if(originals[i].closest('defs,mask,clipPath'))return;
-     const paint=getComputedStyle(originals[i]);
-     if(paint.fill!=='none')node.style.fill='#000';
-     if(paint.stroke!=='none')node.style.stroke='#000';
-   });
-   const ids=new Map();copy.querySelectorAll('[id]').forEach(node=>{const old=node.id;node.id='tc-cutout-'+old;ids.set(old,node.id)});
-   copy.querySelectorAll('*').forEach(node=>[...node.attributes].forEach(attr=>{
-     let value=attr.value;ids.forEach((next,old)=>{value=value.split('#'+old).join('#'+next)});
-     if(value!==attr.value)node.setAttribute(attr.name,value);
-   }));
-   copy.removeAttribute('style');copy.setAttribute('width','1200');copy.setAttribute('height','900');copy.setAttribute('x','0');copy.setAttribute('y','0');
-   pose.replaceChildren(copy);
- }
- // Rasterize once at the resting size. Mobile never enlarges the live SVG tree.
- function snapshotSVG(source,width){
-   return new Promise(resolve=>{
-     const copy=source.cloneNode(true);copy.removeAttribute('style');
-     copy.setAttribute('width','1200');copy.setAttribute('height','900');
-     const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml'}));
-     const image=new Image();let done=false;
-     const end=value=>{if(done)return;done=true;clearTimeout(timer);URL.revokeObjectURL(url);resolve(value)};
-     const timer=setTimeout(()=>end(null),900);
-     image.onload=()=>{
-       if(done)return;
-       try{const bitmap=document.createElement('canvas');bitmap.width=Math.ceil(width*2);bitmap.height=Math.ceil(width*1.5);
-         const context=bitmap.getContext('2d');context.drawImage(image,0,0,bitmap.width,bitmap.height);end(bitmap);
-       }catch(error){end(null)}
-     };
-     image.onerror=()=>end(null);image.src=url;
-   });
- }
- async function reveal(){
+ // Four final-frame Bezier contours from the original Lottie, flattened to its
+ // 1200x900 composition. Animate SVG geometry, never an enlarged bitmap/texture.
+ const revealPaths=[{"d":"M832.63 285.54C821.12 317.17 786.14 342.81 754.51 342.81C722.88 342.81 706.57 317.17 718.08 285.54C729.59 253.91 764.57 228.27 796.2 228.27C827.83 228.27 844.14 253.91 832.63 285.54C832.63 285.54 832.63 285.54 832.63 285.54C832.63 285.54 832.63 285.54 832.63 285.54Z","fill":"#1f1f1f"},{"d":"M624.39 228.27C624.39 228.27 624.39 228.27 624.39 228.27C561.13 228.27 491.18 279.55 468.15 342.82C457.093 373.197 446.037 403.573 434.98 433.95C434.73 434.64 435.24 435.37 435.97 435.37C435.97 435.37 435.97 435.37 435.97 435.37C436.35 435.37 436.7 435.17 436.88 434.84C466.45 382.37 527.14 342.83 582.69 342.83C620.173 342.83 657.657 342.83 695.14 342.83C696.4 342.83 697.53 342.04 697.96 340.86C711.13 304.677 724.3 268.493 737.47 232.31C738.18 230.35 736.73 228.28 734.65 228.28C697.897 228.28 661.143 228.28 624.39 228.28C624.39 228.277 624.39 228.273 624.39 228.27C624.39 228.27 624.39 228.27 624.39 228.27Z","fill":"#1f1f1f"},{"d":"M542.47 453.32C554.043 421.52 565.617 389.72 577.19 357.92C577.92 355.92 576.39 353.81 574.26 353.89C509.18 356.32 447.19 411.79 428.7 479.52C416.25 525.12 449.64 570.88 496.9 571.87C497.7 571.89 498.51 571.9 499.32 571.9C536.8 571.9 574.28 571.9 611.76 571.9C613.02 571.9 614.15 571.11 614.58 569.93C627.75 533.747 640.92 497.563 654.09 461.38C654.8 459.42 653.35 457.35 651.27 457.35C615.943 457.35 580.617 457.35 545.29 457.35C543.21 457.35 541.76 455.28 542.47 453.32C542.47 453.32 542.47 453.32 542.47 453.32C542.47 453.32 542.47 453.32 542.47 453.32Z","fill":"#00857a"},{"d":"M559.8 233.97C562.68 232.6 561.69 228.27 558.5 228.27C504.807 228.27 451.113 228.27 397.42 228.27C396.15 228.27 395 229.07 394.58 230.28C374.53 288.1 401.12 335.47 455.03 342.03C456.39 342.2 457.67 341.39 458.16 340.11C475.63 294.76 515.14 255.25 559.79 233.97C559.793 233.97 559.797 233.97 559.8 233.97C559.8 233.97 559.8 233.97 559.8 233.97Z","fill":"#00857a"}];
+ function reveal(){
    if(revealing||finished)return;
    if(!ready||reduced.matches){finish();return}
    revealing=true;animation.goToAndStop(410,true);
-   const mobile=matchMedia('(max-width:760px), (pointer:coarse)').matches;
    const box=stage.getBoundingClientRect(),base=box.width/1200;
-   let bitmap=null,canvas=null,context=null;
-   if(mobile){
+   if(matchMedia('(max-width:760px), (pointer:coarse)').matches){
      const video=document.querySelector('.hero-video');
      if(video&&!video.paused){resumeFilm=video;video.pause()}
-     bitmap=await snapshotSVG(stage.querySelector('svg'),box.width).catch(()=>null);
-     if(finished)return;
-     if(!bitmap){finish();return}
-     canvas=document.createElement('canvas');canvas.className='tc-loader-canvas';canvas.setAttribute('aria-hidden','true');
-     // Bound per-frame pixel work even on high-DPR phones and tablets.
-     const ratio=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1400000/(innerWidth*innerHeight)));
-     canvas.width=Math.ceil(innerWidth*ratio);canvas.height=Math.ceil(innerHeight*ratio);
-     context=canvas.getContext('2d');if(!context){finish();return}
-     context.setTransform(ratio,0,0,ratio,0,0);context.fillStyle='#fff';context.fillRect(0,0,innerWidth,innerHeight);
-     overlay.insertBefore(canvas,stage);screen.style.display='none';stage.style.display='none';
-   }else{
-     try{silhouette(stage.querySelector('svg'))}catch(error){console.warn('Loader reveal unavailable',error);finish();return}
    }
+   const colors=document.createElementNS(ns,'g');
+   revealPaths.forEach(({d,fill})=>{
+     const aperture=document.createElementNS(ns,'path');
+     aperture.setAttribute('d',d);aperture.setAttribute('fill','black');pose.append(aperture);
+     const color=aperture.cloneNode();color.setAttribute('fill',fill);colors.append(color);
+   });
+   screen.append(colors);
+   const initial=`translate(${box.left} ${box.top}) scale(${base})`;
+   colors.setAttribute('transform',initial);pose.setAttribute('transform',initial);
+   stage.style.display='none';
    dimensions();overlay.classList.add('tc-opening');
    // Authored 1200x900 coordinates: asset 4's swoop ends beside layer 10's ball.
    // (700,285) lies inside the upper swoop, close to their shared edge.
    const anchor={x:700,y:285};
    const pin={x:box.left+anchor.x*base,y:box.top+anchor.y*base};
-   stage.style.transformOrigin=`${anchor.x/12}% ${anchor.y/9}%`;
    const relay=document.createElementNS(ns,'circle');
    relay.setAttribute('fill','black');relay.setAttribute('cx',pin.x);relay.setAttribute('cy',pin.y);relay.setAttribute('r',0);cutout.append(relay);
    const radius=Math.hypot(Math.max(pin.x,innerWidth-pin.x),Math.max(pin.y,innerHeight-pin.y))+2;
@@ -104,20 +67,12 @@
      const s=base*scale;
      const x=pin.x-anchor.x*s,y=pin.y-anchor.y*s,follow=Math.max(0,(t-.38)/.62);
      const circleRadius=radius*follow*follow*(3-2*follow),fade=1-Math.min(1,t/.22);
-     if(context){
-       context.globalCompositeOperation='source-over';context.globalAlpha=1;
-       context.fillStyle='#fff';context.fillRect(0,0,innerWidth,innerHeight);
-       context.globalCompositeOperation='destination-out';context.globalAlpha=Math.min(1,t/.14);
-       context.drawImage(bitmap,x,y,1200*s,900*s);
-       context.globalAlpha=1;context.beginPath();context.arc(pin.x,pin.y,circleRadius,0,Math.PI*2);context.fill();
-       if(fade>0){context.globalCompositeOperation='source-over';context.globalAlpha=fade;context.drawImage(bitmap,x,y,1200*s,900*s)}
-     }else{
-       pose.setAttribute('transform',`translate(${x} ${y}) scale(${s})`);
-       pose.setAttribute('opacity',Math.min(1,t/.14));
-       if(fade>0){stage.style.transform=`translate(-50%,-50%) scale(${scale})`;stage.style.opacity=String(fade)}
-       else stage.style.display='none';
-       relay.setAttribute('r',circleRadius);
-     }
+     const transform=`translate(${x} ${y}) scale(${s})`;
+     pose.setAttribute('transform',transform);
+     pose.setAttribute('opacity',Math.min(1,t/.14));
+     if(fade>0){colors.setAttribute('transform',transform);colors.setAttribute('opacity',fade)}
+     else colors.style.display='none';
+     relay.setAttribute('r',circleRadius);
      if(t>.28)announce();
      if(t<1)frame=requestAnimationFrame(tick);else finish();
    }
