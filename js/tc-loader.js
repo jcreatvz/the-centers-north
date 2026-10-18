@@ -52,19 +52,27 @@
    try{silhouette(stage.querySelector('svg'))}catch(error){console.warn('Loader reveal unavailable',error);finish();return}
    dimensions();overlay.classList.add('tc-opening');
    const box=stage.getBoundingClientRect(),base=box.width/1200;
-   const target=Math.max(26,Math.hypot(innerWidth,innerHeight)/(box.width*.05));
-   const start=performance.now(),duration=1600;
-   // Both layers use the same scale about the viewport center, with no shape swap.
+   // Authored 1200x900 coordinates: asset 4's swoop ends beside layer 10's ball.
+   // (700,285) lies inside the upper swoop, close to their shared edge.
+   const anchor={x:700,y:285};
+   const pin={x:box.left+anchor.x*base,y:box.top+anchor.y*base};
+   stage.style.transformOrigin=`${anchor.x/12}% ${anchor.y/9}%`;
+   const relay=document.createElementNS(ns,'circle');
+   relay.setAttribute('fill','black');relay.setAttribute('cx',pin.x);relay.setAttribute('cy',pin.y);relay.setAttribute('r',0);cutout.append(relay);
+   const radius=Math.hypot(Math.max(pin.x,innerWidth-pin.x),Math.max(pin.y,innerHeight-pin.y))+2;
+   const target=Math.max(18,Math.hypot(innerWidth,innerHeight)/(box.width*.08));
+   const start=performance.now(),duration=1050;
+   // Keep the same swoop point fixed in both layers; the circle follows from it.
    function tick(now){
      const t=Math.min(1,(now-start)/duration),eased=t*t*(3-2*t),scale=1+(target-1)*eased;
      const s=base*scale;
-     pose.setAttribute('transform',`translate(${innerWidth/2-600*s} ${innerHeight/2-450*s}) scale(${s})`);
+     pose.setAttribute('transform',`translate(${pin.x-anchor.x*s} ${pin.y-anchor.y*s}) scale(${s})`);
      pose.setAttribute('opacity',Math.min(1,t/.14));
      stage.style.transform=`translate(-50%,-50%) scale(${scale})`;
      stage.style.opacity=String(1-Math.min(1,t/.22));
-     // The enlarged edge dissolves only at the end, clearing the icon's negative spaces.
-     screen.style.opacity=String(1-Math.max(0,(t-.78)/.22));
-     if(t>.38)announce();
+     const follow=Math.max(0,(t-.38)/.62);
+     relay.setAttribute('r',radius*follow*follow*(3-2*follow));
+     if(t>.28)announce();
      if(t<1)frame=requestAnimationFrame(tick);else finish();
    }
    frame=requestAnimationFrame(tick);
@@ -76,7 +84,7 @@
  if(reduced.matches){finish();return}
  try{
    animation=lottie.loadAnimation({container:stage,renderer:'svg',loop:false,autoplay:false,animationData:window.TC_LOADER_DATA,rendererSettings:{preserveAspectRatio:'xMidYMid meet'}});
-   const start=()=>{if(ready||finished)return;ready=true;animation.playSegments([0,410],true)};
+   const start=()=>{if(ready||finished)return;ready=true;animation.setSpeed(1.05);animation.playSegments([0,410],true)};
    animation.addEventListener('DOMLoaded',start);
    animation.addEventListener('complete',reveal);
    animation.addEventListener('data_failed',finish);
