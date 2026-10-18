@@ -106,6 +106,7 @@
  });
  function update(){
    raf=0;
+   if(window.__tcIntroPending)return;
    if(scrollY>8)setLogo(false);
    else if(scrollY<=1)setLogo(true);
    const rect=signup.getBoundingClientRect();
@@ -118,8 +119,8 @@
  addEventListener('scroll',schedule,{passive:true});
  addEventListener('resize',()=>{if(innerWidth>1050)setMenu(false);schedule()},{passive:true});
  reduced.addEventListener('change',()=>{signup.style.removeProperty('--pattern-y');setLogo(logoExpanded,true);schedule()});
- if(scrollY<=1)intro();else setLogo(false);
- update();
+ function startHomepage(){if(scrollY<=1)intro();else setLogo(false);update()}
+ if(window.__tcIntroPending)window.addEventListener('tc:reveal',startHomepage,{once:true});else startHomepage();
  document.querySelectorAll('.upgrade-list details').forEach(details=>{
    const summary=details.querySelector('summary'),content=details.querySelector('ul');
    let animation=null,contentAnimation=null,target=details.open;
