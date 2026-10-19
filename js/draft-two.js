@@ -71,29 +71,32 @@
    try{
      // Measure the text itself so impact lands on the letters, not anchor padding.
      const range=document.createRange();range.selectNodeContents(link);
+     const last=link.lastChild;
+     if(last?.nodeType===3&&last.textContent.length)range.setStart(last,last.textContent.length-1);
      const text=range.getBoundingClientRect();
      const r=text.width?text:link.getBoundingClientRect();
-     const hit={x:Math.max(radius,Math.min(innerWidth-radius,r.right-Math.min(12,r.width*.12))),y:r.top+r.height*.5};
+     // The circle's left edge reaches the final glyph; its centre stays outside the text.
+     const hit={x:r.right+radius-2,y:r.top+r.height*.5};
      const dx=hit.x-origin.x,dy=hit.y-origin.y;
      const lift=Math.min(130,Math.max(48,Math.hypot(dx,dy)*.2),Math.max(16,Math.min(origin.y,hit.y)-90));
-     const approach=Array.from({length:31},(_,n)=>{
-       const t=n/30;return {offset:t,transform:position({x:origin.x+dx*t,y:origin.y+dy*t-4*lift*t*(1-t)})};
-     });
-     await ball.animate(approach,{duration:580,easing:'linear',fill:'forwards'}).finished;
-     shake=link.animate([
-       {transform:'translateX(0)'},{transform:'translateX(-4px)',offset:.2},
-       {transform:'translateX(3px)',offset:.45},{transform:'translateX(-1px)',offset:.7},{transform:'translateX(0)'}
-     ],{duration:220,easing:'linear'});
-     // Rebound to the right, then let gravity carry the ball below the viewport.
-     // Constant horizontal speed and accelerating vertical speed preserve the arc.
-     const gravity=3400,vy=-150,drop=innerHeight+radius+4-hit.y;
+     const throwMs=450,gravity=3400,vy=220,drop=innerHeight+radius+4-hit.y;
      const seconds=(-vy+Math.sqrt(vy*vy+2*gravity*drop))/gravity;
-     const drift=Math.max(0,Math.min(105,innerWidth-radius-8-hit.x));
-     const fall=Array.from({length:41},(_,n)=>{
-       const t=n/40,time=t*seconds;
-       return {offset:t,transform:position({x:hit.x+drift*t,y:hit.y+vy*time+.5*gravity*time*time})};
+     const fallMs=seconds*1000,totalMs=throwMs+fallMs;
+     const drift=Math.max(0,Math.min(75,innerWidth-radius-4-hit.x));
+     const approach=Array.from({length:31},(_,n)=>{
+       const t=n/30;return {offset:t*throwMs/totalMs,transform:position({x:origin.x+dx*t,y:origin.y+dy*t-4*lift*t*(1-t)})};
      });
-     await ball.animate(fall,{duration:seconds*1000,easing:'linear',fill:'forwards'}).finished;
+     const fall=Array.from({length:40},(_,n)=>{
+       const t=(n+1)/40,time=t*seconds;
+       return {offset:(throwMs+t*fallMs)/totalMs,transform:position({x:hit.x+drift*t,y:hit.y+vy*time+.5*gravity*time*time})};
+     });
+     // One animation crosses the impact frame, so the ball never stalls there.
+     const flight=ball.animate([...approach,...fall],{duration:totalMs,easing:'linear',fill:'forwards'});
+     shake=link.animate([
+       {transform:'translateX(0)'},{transform:'translateX(-3px)',offset:.18},
+       {transform:'translateX(2px)',offset:.45},{transform:'translateX(-1px)',offset:.7},{transform:'translateX(0)'}
+     ],{delay:throwMs,duration:160,easing:'linear'});
+     await flight.finished;
    }finally{shake?.cancel();ball.remove()}
  }
  function beginMenuClose({link=null,destination=null,restoreFocus=false}={}){
