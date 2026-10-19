@@ -64,7 +64,8 @@
    const ball=document.createElement('span');ball.className='nav-throw-ball';ball.setAttribute('aria-hidden','true');
    // Each menu anchor can override the shared lime colour with data-ball-color.
    ball.style.backgroundColor=link.dataset.ballColor||'#b7cc33';
-   const radius=20,origin={x:innerWidth-54,y:innerHeight-54};
+   const radius=matchMedia('(max-width:380px)').matches?15.4:20;
+   const origin={x:innerWidth-54,y:innerHeight-54};
    ball.style.left=(origin.x-radius)+'px';ball.style.top=(origin.y-radius)+'px';document.body.append(ball);
    let shake=null;
    const position=point=>`translate3d(${point.x-origin.x}px,${point.y-origin.y}px,0)`;
