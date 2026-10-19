@@ -59,30 +59,57 @@
      navSwoop.setDirection(-1);navSwoop.setSpeed(2.2);navSwoop.goToAndPlay(navSwoop.currentFrame,true);
    });
  }
- function throwBallAt(link){
-   if(reduced.matches||!parts.swoopball)return Promise.resolve();
-   const rect=link.getBoundingClientRect(),startX=innerWidth-54,startY=innerHeight-54;
-   const endX=rect.left+Math.min(rect.width*.72,rect.width-8),endY=rect.top+rect.height*.52;
-   const dx=endX-startX,dy=endY-startY,lift=Math.min(130,Math.max(42,Math.abs(dx)*.16));
-   const ball=document.createElement('span');ball.className='nav-throw-ball';ball.setAttribute('aria-hidden','true');
-   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','300 -4 100 90');svg.setAttribute('focusable','false');
-   const shape=parts.swoopball.cloneNode(true);shape.removeAttribute('id');shape.removeAttribute('class');svg.append(shape);ball.append(svg);
-   ball.style.left=(startX-15)+'px';ball.style.top=(startY-15)+'px';document.body.append(ball);
-   return new Promise(resolve=>{
-     const flight=ball.animate([
-       {transform:'translate3d(0,0,0) rotate(0deg) scale(1)',offset:0,easing:'cubic-bezier(.16,.68,.25,1)'},
-       {transform:`translate3d(${dx*.54}px,${dy*.54-lift}px,0) rotate(260deg) scale(1.08)`,offset:.56,easing:'cubic-bezier(.2,.7,.28,1)'},
-       {transform:`translate3d(${dx}px,${dy}px,0) rotate(520deg) scale(.62)`,offset:1}
-     ],{duration:420,fill:'forwards'});
-     flight.onfinish=()=>{
-       ball.remove();
-       const impact=link.animate([
-         {transform:'translateX(0) scale(1)'},{transform:'translateX(9px) scale(.97)',offset:.38,easing:'cubic-bezier(.2,.8,.3,1)'},
-         {transform:'translateX(-3px) scale(1.015)',offset:.68,easing:'cubic-bezier(.2,.7,.3,1)'},{transform:'translateX(0) scale(1)'}
-       ],{duration:180,easing:'cubic-bezier(.22,1,.36,1)'});
-       impact.onfinish=resolve;
-     };
+ async function throwBallAt(link){
+   if(reduced.matches)return;
+   const ns='http://www.w3.org/2000/svg',ball=document.createElement('span');
+   ball.className='nav-throw-ball';ball.setAttribute('aria-hidden','true');
+   // Independent artwork: the header logo's inline opacity/clip transforms must
+   // never be copied into this overlay. Keep the ball above the header (z=100).
+   const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 44 44');svg.setAttribute('focusable','false');
+   const circle=document.createElementNS(ns,'circle');
+   Object.entries({cx:22,cy:22,r:19,fill:'#00857a',stroke:'#fff','stroke-width':3}).forEach(([key,value])=>circle.setAttribute(key,value));
+   const seams=document.createElementNS(ns,'path');
+   Object.entries({d:'M5 22h34M22 3c-13 9-13 29 0 38M22 3c13 9 13 29 0 38',fill:'none',stroke:'#094742','stroke-width':2,'stroke-linecap':'round'}).forEach(([key,value])=>seams.setAttribute(key,value));
+   svg.append(circle,seams);ball.append(svg);
+   const origin={x:innerWidth-54,y:innerHeight-54};
+   ball.style.left=(origin.x-22)+'px';ball.style.top=(origin.y-22)+'px';document.body.append(ball);
+   const selected=links.indexOf(link);
+   const neighbor=[links[selected+1],links[selected-1]].find(item=>{
+     if(!item)return false;
+     const r=item.getBoundingClientRect();return r.width>0&&r.top>=90&&r.bottom<innerHeight-25;
    });
+   const stops=neighbor?[neighbor,link]:[link];let from=origin,rotation=0;
+   const position=(point,angle,scale='1,1')=>`translate3d(${point.x-origin.x}px,${point.y-origin.y}px,0) rotate(${angle}deg) scale(${scale})`;
+   function nudge(item){
+     const hit=item.animate([
+       {transform:'translateX(0) scale(1)'},{transform:'translateX(-10px) scale(.98)',offset:.3},
+       {transform:'translateX(3px) scale(1.01)',offset:.65},{transform:'translateX(0) scale(1)'}
+     ],{duration:240,easing:'cubic-bezier(.22,1,.36,1)'});
+     hit.finished.then(()=>hit.cancel(),()=>{});
+   }
+   try{
+     for(let i=0;i<stops.length;i++){
+       const item=stops[i],r=item.getBoundingClientRect();
+       const to={x:Math.min(innerWidth-26,r.right+15),y:r.top+r.height*.52};
+       const dx=to.x-from.x,dy=to.y-from.y;
+       const lift=Math.min(130,Math.max(48,Math.hypot(dx,dy)*.2),Math.max(16,Math.min(from.y,to.y)-90));
+       const turn=dx<0?-300:300;
+       // Sample a parabola at even time steps: one continuous arc with no pause
+       // at its midpoint and no shrinking as it reaches the text.
+       const frames=Array.from({length:31},(_,n)=>{
+         const t=n/30,point={x:from.x+dx*t,y:from.y+dy*t-4*lift*t*(1-t)};
+         return {offset:t,transform:position(point,rotation+turn*t)};
+       });
+       await ball.animate(frames,{duration:i===0?680:440,easing:'linear',fill:'forwards'}).finished;
+       rotation+=turn;from=to;nudge(item);
+     }
+     // Brief rebound makes the final contact readable before the swoop exits.
+     await ball.animate([
+       {transform:position(from,rotation,'.86,1.1')},
+       {transform:position({x:from.x+16,y:from.y-14},rotation+35),offset:.45},
+       {transform:position(from,rotation+55)}
+     ],{duration:220,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'}).finished;
+   }finally{ball.remove()}
  }
  function beginMenuClose({link=null,destination=null,restoreFocus=false}={}){
    if(!open||closing)return;
@@ -94,7 +121,7 @@
      closeTimer=setTimeout(()=>{menu.hidden=true;closing=false;if(destination)location.assign(destination)},reduced.matches?0:650);
    };
    const exit=()=>reverseNavSwoop().then(finishDrawer);
-   if(link&&!reduced.matches)throwBallAt(link).then(exit);else exit();
+   if(link&&!reduced.matches)throwBallAt(link).then(exit,exit);else exit();
  }
  const shown={opacity:1,transform:'translate(0px,0px)',clipPath:'inset(0 0 0 0)'};
  const hidden=(x,y=0)=>({opacity:0,transform:`translate(${x}px,${y}px)`,clipPath:'inset(0 0 0 0)'});
