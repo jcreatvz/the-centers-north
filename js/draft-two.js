@@ -61,55 +61,40 @@
  }
  async function throwBallAt(link){
    if(reduced.matches)return;
-   const ns='http://www.w3.org/2000/svg',ball=document.createElement('span');
-   ball.className='nav-throw-ball';ball.setAttribute('aria-hidden','true');
-   // Independent artwork: the header logo's inline opacity/clip transforms must
-   // never be copied into this overlay. Keep the ball above the header (z=100).
-   const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 44 44');svg.setAttribute('focusable','false');
-   const circle=document.createElementNS(ns,'circle');
-   Object.entries({cx:22,cy:22,r:19,fill:'#00857a',stroke:'#fff','stroke-width':3}).forEach(([key,value])=>circle.setAttribute(key,value));
-   const seams=document.createElementNS(ns,'path');
-   Object.entries({d:'M5 22h34M22 3c-13 9-13 29 0 38M22 3c13 9 13 29 0 38',fill:'none',stroke:'#094742','stroke-width':2,'stroke-linecap':'round'}).forEach(([key,value])=>seams.setAttribute(key,value));
-   svg.append(circle,seams);ball.append(svg);
-   const origin={x:innerWidth-54,y:innerHeight-54};
-   ball.style.left=(origin.x-22)+'px';ball.style.top=(origin.y-22)+'px';document.body.append(ball);
-   const selected=links.indexOf(link);
-   const neighbor=[links[selected+1],links[selected-1]].find(item=>{
-     if(!item)return false;
-     const r=item.getBoundingClientRect();return r.width>0&&r.top>=90&&r.bottom<innerHeight-25;
-   });
-   const stops=neighbor?[neighbor,link]:[link];let from=origin,rotation=0;
-   const position=(point,angle,scale='1,1')=>`translate3d(${point.x-origin.x}px,${point.y-origin.y}px,0) rotate(${angle}deg) scale(${scale})`;
-   function nudge(item){
-     const hit=item.animate([
-       {transform:'translateX(0) scale(1)'},{transform:'translateX(-10px) scale(.98)',offset:.3},
-       {transform:'translateX(3px) scale(1.01)',offset:.65},{transform:'translateX(0) scale(1)'}
-     ],{duration:240,easing:'cubic-bezier(.22,1,.36,1)'});
-     hit.finished.then(()=>hit.cancel(),()=>{});
-   }
+   const ball=document.createElement('span');ball.className='nav-throw-ball';ball.setAttribute('aria-hidden','true');
+   // Each menu anchor can override the shared lime colour with data-ball-color.
+   ball.style.backgroundColor=link.dataset.ballColor||'#b7cc33';
+   const radius=20,origin={x:innerWidth-54,y:innerHeight-54};
+   ball.style.left=(origin.x-radius)+'px';ball.style.top=(origin.y-radius)+'px';document.body.append(ball);
+   let shake=null;
+   const position=point=>`translate3d(${point.x-origin.x}px,${point.y-origin.y}px,0)`;
    try{
-     for(let i=0;i<stops.length;i++){
-       const item=stops[i],r=item.getBoundingClientRect();
-       const to={x:Math.min(innerWidth-26,r.right+15),y:r.top+r.height*.52};
-       const dx=to.x-from.x,dy=to.y-from.y;
-       const lift=Math.min(130,Math.max(48,Math.hypot(dx,dy)*.2),Math.max(16,Math.min(from.y,to.y)-90));
-       const turn=dx<0?-300:300;
-       // Sample a parabola at even time steps: one continuous arc with no pause
-       // at its midpoint and no shrinking as it reaches the text.
-       const frames=Array.from({length:31},(_,n)=>{
-         const t=n/30,point={x:from.x+dx*t,y:from.y+dy*t-4*lift*t*(1-t)};
-         return {offset:t,transform:position(point,rotation+turn*t)};
-       });
-       await ball.animate(frames,{duration:i===0?680:440,easing:'linear',fill:'forwards'}).finished;
-       rotation+=turn;from=to;nudge(item);
-     }
-     // Brief rebound makes the final contact readable before the swoop exits.
-     await ball.animate([
-       {transform:position(from,rotation,'.86,1.1')},
-       {transform:position({x:from.x+16,y:from.y-14},rotation+35),offset:.45},
-       {transform:position(from,rotation+55)}
-     ],{duration:220,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'}).finished;
-   }finally{ball.remove()}
+     // Measure the text itself so impact lands on the letters, not anchor padding.
+     const range=document.createRange();range.selectNodeContents(link);
+     const text=range.getBoundingClientRect();
+     const r=text.width?text:link.getBoundingClientRect();
+     const hit={x:Math.max(radius,Math.min(innerWidth-radius,r.right-Math.min(12,r.width*.12))),y:r.top+r.height*.5};
+     const dx=hit.x-origin.x,dy=hit.y-origin.y;
+     const lift=Math.min(130,Math.max(48,Math.hypot(dx,dy)*.2),Math.max(16,Math.min(origin.y,hit.y)-90));
+     const approach=Array.from({length:31},(_,n)=>{
+       const t=n/30;return {offset:t,transform:position({x:origin.x+dx*t,y:origin.y+dy*t-4*lift*t*(1-t)})};
+     });
+     await ball.animate(approach,{duration:580,easing:'linear',fill:'forwards'}).finished;
+     shake=link.animate([
+       {transform:'translateX(0)'},{transform:'translateX(-4px)',offset:.2},
+       {transform:'translateX(3px)',offset:.45},{transform:'translateX(-1px)',offset:.7},{transform:'translateX(0)'}
+     ],{duration:220,easing:'linear'});
+     // Rebound to the right, then let gravity carry the ball below the viewport.
+     // Constant horizontal speed and accelerating vertical speed preserve the arc.
+     const gravity=3400,vy=-150,drop=innerHeight+radius+4-hit.y;
+     const seconds=(-vy+Math.sqrt(vy*vy+2*gravity*drop))/gravity;
+     const drift=Math.max(0,Math.min(105,innerWidth-radius-8-hit.x));
+     const fall=Array.from({length:41},(_,n)=>{
+       const t=n/40,time=t*seconds;
+       return {offset:t,transform:position({x:hit.x+drift*t,y:hit.y+vy*time+.5*gravity*time*time})};
+     });
+     await ball.animate(fall,{duration:seconds*1000,easing:'linear',fill:'forwards'}).finished;
+   }finally{shake?.cancel();ball.remove()}
  }
  function beginMenuClose({link=null,destination=null,restoreFocus=false}={}){
    if(!open||closing)return;
