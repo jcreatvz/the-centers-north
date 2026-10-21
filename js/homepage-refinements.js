@@ -31,7 +31,7 @@
     const orbit = window.centersSports?.orbit;
     const mask = root?.querySelector('.so-detail-image');
     if (!orbit || !mask) return false;
-    const updateZoom = () => { orbit.config.cameraZoom = phone.matches ? 1.7 : 1.15; orbit.syncControls(); orbit.needsRender = true; orbit.resize(); };
+    const updateZoom = () => { orbit.config.cameraZoom = phone.matches ? 1.5 : 1.15; orbit.syncControls(); orbit.needsRender = true; orbit.resize(); };
     phone.addEventListener('change', updateZoom);
     updateZoom();
     slidingSelection(root.querySelector('.so-sports'), '[aria-pressed=true]');
@@ -94,11 +94,47 @@
   reduced.addEventListener('change', queueHero);
 
   const facility = document.querySelector('.facility');
-  if (facility && 'IntersectionObserver' in window) {
+  if (facility) {
+    const layer = facility.querySelector('.facility-courts');
+    const courts = [...layer.querySelectorAll('.facility-court')];
+    const clamp = value => Math.max(0, Math.min(1, value));
+    const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
+    let courtFrame = 0;
     facility.classList.add('court-motion-ready');
-    const courts = new IntersectionObserver(entries => {
-      entries.forEach(entry => entry.target.classList.toggle('is-court-visible', entry.isIntersecting));
-    }, {threshold:0,rootMargin:'0px 0px -12% 0px'});
-    facility.querySelectorAll('.facility-court').forEach(court => courts.observe(court));
+    function paintCourts() {
+      courtFrame = 0;
+      const vh = innerHeight;
+      // SVG elements have no offsetTop. Remove our own translation from their
+      // viewport bounds to measure the fixed layout without a feedback loop.
+      const geometry = courts.map(court => {
+        const rect = court.getBoundingClientRect();
+        const shift = reduced.matches ? 0 : parseFloat(court.style.getPropertyValue('--court-y')) || 0;
+        return {court, top:rect.top-shift, height:rect.height};
+      });
+      for (const {court,top,height} of geometry) {
+        const enter = clamp((vh*.92-top)/Math.min(vh*.52,height+vh*.18));
+        const leave = clamp((top+height-vh*.08)/Math.min(vh*.36,height+vh*.06));
+        const progress = reduced.matches ? 1 : Math.min(enter,leave);
+        const travel = clamp((vh-top)/(vh+height));
+        court.style.setProperty('--court-dash', (1-smooth(progress/.75)).toFixed(4));
+        court.style.setProperty('--court-fill', smooth((progress-.5)/.5).toFixed(4));
+        court.style.setProperty('--court-y', (reduced.matches ? 0 : (0.5-travel)*32).toFixed(2)+'px');
+      }
+    }
+    function queueCourts() { if (!courtFrame) courtFrame=requestAnimationFrame(paintCourts); }
+    function sizeCourts() {
+      // Original viewBox widths: 53, 46 and 48.1 units. The shared scale also
+      // reserves a vertical gap between the right-hand courts at every width.
+      const unit = Math.min(8,facility.clientWidth/145,facility.offsetHeight/190);
+      layer.style.setProperty('--court-unit', unit.toFixed(4)+'px');
+      queueCourts();
+    }
+    new ResizeObserver(sizeCourts).observe(facility);
+    window.addEventListener('scroll',queueCourts,{passive:true});
+    window.addEventListener('resize',sizeCourts,{passive:true});
+    window.addEventListener('pageshow',sizeCourts);
+    reduced.addEventListener('change',queueCourts);
+    document.fonts?.ready.then(sizeCourts);
+    sizeCourts();
   }
 })();

@@ -3,7 +3,7 @@
   --lime:#b7cc33; --orange:#c55a2c; --light-blue:#6fa2b8;
   --sport-pickleball:var(--lime); --sport-basketball:var(--orange);
   --sport-volleyball:var(--pink);
-  --hero-swoop-color:#00857a; --hero-tail-color:#00857a;
+  --hero-swoop-color:#00857a; --hero-opposite-color:#00857a;
 }
 .hero-content{padding-top:10rem;position:relative;isolation:isolate}
 .desktop-nav a{text-transform:capitalize}
@@ -52,32 +52,34 @@
 .hero-content>h1,.hero-content>.hero-bottom{position:relative;z-index:1}
 .hero-corner-art{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 .hero-corner{position:absolute;display:block;height:auto;transition:transform .75s var(--v2-ease);will-change:transform}
-.hero-corner--swoop{width:clamp(210px,33vw,500px);right:-8%;top:-5%;fill:var(--hero-swoop-color)}
-.hero-corner--tail{width:clamp(180px,25vw,380px);left:-13%;bottom:-25%;fill:var(--hero-tail-color)}
-.hero-art-out .hero-corner--swoop,.tc-intro-wait .hero-corner--swoop{transform:translate3d(100%,-80%,0)}
-.hero-art-out .hero-corner--tail,.tc-intro-wait .hero-corner--tail{transform:translate3d(-100%,80%,0)}
+.hero-corner--swoop{width:clamp(210px,33vw,500px);left:0;right:auto;top:-5%;fill:var(--hero-swoop-color)}
+.hero-corner--opposite{left:auto;right:0;top:auto;bottom:-5%;fill:var(--hero-opposite-color);transform:rotate(180deg)}
+.hero-art-out .hero-corner--swoop,.tc-intro-wait .hero-corner--swoop{transform:translate3d(-100%,-80%,0)}
+.hero-art-out .hero-corner--opposite,.tc-intro-wait .hero-corner--opposite{transform:translate3d(100%,80%,0) rotate(180deg)}
 
 /* The court artwork sits below every content layer and cannot intercept input. */
 .facility{position:relative;isolation:isolate;overflow:hidden}
 .facility> :not(.facility-courts){position:relative;z-index:1}
 .facility-courts{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.facility-court{position:absolute;height:auto;opacity:.16;overflow:visible}
-.facility-court--volleyball{width:clamp(220px,26vw,360px);right:-5%;top:-10%;transform:rotate(22deg);color:var(--pink);--court-delay:0ms}
-.facility-court--pickleball{width:clamp(330px,43vw,620px);left:-12%;top:35%;transform:rotate(-24deg);color:var(--lime);--court-delay:160ms}
-.facility-court--basketball{width:clamp(280px,29vw,440px);right:-7%;bottom:-32%;transform:rotate(-22deg);color:var(--orange);--court-delay:320ms}
+/* One CSS pixel scale per original SVG unit preserves ALL relative court dimensions.
+   Opposite sides and height-limited scale keep their bounds apart, including parallax. */
+.facility-courts{--court-unit:clamp(1.5px,.45vw,6px)}
+.facility-court{position:absolute;height:auto;opacity:.16;overflow:visible;color:#fff;transform:translate3d(0,var(--court-y,0px),0)}
+.facility-court--volleyball{width:calc(46 * var(--court-unit));right:6%;top:4%}
+.facility-court--pickleball{width:calc(53 * var(--court-unit));left:-2%;top:40%}
+.facility-court--basketball{width:calc(48.1 * var(--court-unit));right:3%;bottom:-2%}
 .facility-court path{fill:currentColor;stroke:currentColor;stroke-width:.2;stroke-linejoin:round;fill-opacity:1}
-.court-motion-ready .facility-court path{stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;transition:stroke-dashoffset 1.65s cubic-bezier(.3,.1,.25,1),fill-opacity .65s ease}
-.court-motion-ready .facility-court.is-court-visible path{stroke-dashoffset:0;fill-opacity:1;transition-delay:var(--court-delay),calc(1000ms + var(--court-delay))}
+.court-motion-ready .facility-court path{stroke-dasharray:1;stroke-dashoffset:var(--court-dash,1);fill-opacity:var(--court-fill,0)}
 
-.interest-options [data-interest=basketball]{--interest-color:var(--orange);--interest-ink:#0c0c0c}
-.interest-options [data-interest=volleyball]{--interest-color:var(--pink);--interest-ink:#101c1b}
-.interest-options [data-interest=pickleball]{--interest-color:var(--lime);--interest-ink:#101c1b}
-.interest-options [data-interest=soccer]{--interest-color:var(--teal);--interest-ink:#fff}
-.interest-options [data-interest=fitness]{--interest-color:var(--light-blue);--interest-ink:#101c1b}
+.interest-options [data-interest=basketball]{--interest-color:var(--orange)}
+.interest-options [data-interest=volleyball]{--interest-color:var(--pink)}
+.interest-options [data-interest=pickleball]{--interest-color:var(--lime)}
+.interest-options [data-interest=soccer]{--interest-color:var(--teal)}
+.interest-options [data-interest=fitness]{--interest-color:var(--light-blue)}
 .signup-form .interest-options input{z-index:2}
 .signup-form .interest-options span{position:relative;isolation:isolate;overflow:hidden;transition:color .3s,border-color .3s}
-.signup-form .interest-options span::before{content:'';position:absolute;inset:-1px;z-index:-1;background:var(--interest-color);transform:translateX(-103%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
-.signup-form .interest-options input:checked+span{background:transparent;border-color:var(--interest-color);color:var(--interest-ink)}
+.signup-form .interest-options span::before{content:'';position:absolute;inset:-1px;z-index:-1;border-radius:100px;background:var(--interest-color);transform:translateX(-103%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
+.signup-form .interest-options input:checked+span{background:transparent;border-color:var(--interest-color);color:#1e1e1e}
 .signup-form .interest-options input:checked+span::before{transform:translateX(0)}
 
 @media(max-width:900px){
@@ -85,16 +87,18 @@
   #sports .sports-orbit-home .so-sport-chip{flex:1;min-width:0;padding-inline:8px;font-size:clamp(10px,2.8vw,12px)}
 }
 @media(max-width:760px){
-  .hero-corner--swoop{width:65vw;right:-21%;top:2%}
-  .hero-corner--tail{width:54vw;left:-30%;bottom:-10%}
+  .hero-corner--swoop{width:65vw;left:0;right:auto;top:2%}
+  .hero-corner--opposite{left:auto;right:0;top:auto;bottom:-4%}
   .facility-court{opacity:.12}
-  .facility-court--volleyball{right:-30%;top:-2%;width:65vw}
-  .facility-court--pickleball{left:-28%;top:39%;width:90vw}
-  .facility-court--basketball{right:-22%;bottom:-10%;width:70vw}
+  .facility-court--volleyball{right:5%;top:3%}
+  .facility-court--pickleball{left:-8%;top:43%}
+  .facility-court--basketball{right:5%;bottom:2%}
 }
 @media(prefers-reduced-motion:reduce){
   #sports .so-detail-drift{animation:none;transform:none;translate:none;transition:none}
   .hero-corner{transform:none!important;transition:none;will-change:auto}
+  .hero-corner--opposite{transform:rotate(180deg)!important}
+  .facility-court{transform:none}
   .court-motion-ready .facility-court path{stroke-dashoffset:0;fill-opacity:1;transition:none}
   #sports .has-slider::before,.signup-form .interest-options span::before{transition:none!important}
 }
