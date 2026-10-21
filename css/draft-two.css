@@ -66,6 +66,6 @@ html{scroll-padding-top:100px}
 @media(prefers-reduced-motion:reduce){.location.active .location-status::before,.back-top path{animation:none!important}.footer .back-top,.footer .back-top::before{transition:none}}
 
 .nav-throw-ball{position:fixed;z-index:110;display:block;width:40px;height:40px;border-radius:50%;background:#b7cc33;opacity:1;pointer-events:none;will-change:transform}
-@media(max-width:380px){.nav-throw-ball{width:30.8px;height:30.8px}}
+@media(max-width:760px){.nav-throw-ball{width:30.8px;height:30.8px}}
 @media(max-width:700px){.mobile-nav-art{top:auto;bottom:0;height:80%}}
 .footer-top{justify-items:center}
