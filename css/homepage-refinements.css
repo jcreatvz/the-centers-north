@@ -142,3 +142,6 @@ html{scroll-behavior:auto!important}
 @media(max-width:1050px) and (max-height:700px){
  .site-header .mobile-nav:not([hidden]){padding-top:190px}
 }
+
+/* Footer palette override for the second draft. */
+.footer{background:var(--deep)}
