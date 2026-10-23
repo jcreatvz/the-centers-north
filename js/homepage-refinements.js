@@ -72,33 +72,36 @@
 
   const hero = document.querySelector('.hero');
   let revealed = !window.__tcIntroPending, lastY = scrollY, trend = 0, heroFrame = 0;
+  let heroBusy = false, heroTimer = 0, heroWanted = !revealed || scrollY > 12;
+  function setHeroState(out) {
+    heroWanted = out;
+    if (heroBusy || hero.classList.contains('hero-art-out') === out) return;
+    hero.classList.toggle('hero-art-out', out);
+    if (reduced.matches) return;
+    // Finish each 700ms slide. Rapid direction changes queue only the latest state.
+    heroBusy = true;
+    clearTimeout(heroTimer);
+    heroTimer = setTimeout(() => { heroBusy = false; setHeroState(heroWanted); }, 700);
+  }
   function heroMotion() {
     heroFrame = 0;
-    const y = scrollY, delta = y-lastY; lastY = y;
-    const box = hero.getBoundingClientRect();
+    const y = Math.max(0, scrollY), delta = y-lastY; lastY = y;
     if (Math.sign(delta) !== Math.sign(trend)) trend = delta; else trend += delta;
-    if (!revealed || reduced.matches) return;
-    if (y <= 12) { hero.classList.remove('hero-art-out'); trend = 0; }
-    else if (Math.abs(trend) > 12) {
-      hero.classList.toggle('hero-art-out', trend > 0 || box.bottom <= 0);
-      trend = 0;
-    }
+    if (!revealed) return;
+    if (y <= 12) { setHeroState(false); trend = 0; }
+    else if (Math.abs(trend) > 24) { setHeroState(trend > 0 || hero.getBoundingClientRect().bottom <= 0); trend = 0; }
   }
   const queueHero = () => { if (!heroFrame) heroFrame = requestAnimationFrame(heroMotion); };
-  hero.classList.toggle('hero-art-out', !revealed || scrollY > 12);
-  window.addEventListener('tc:reveal', () => {
-    revealed = true; lastY = scrollY;
-    requestAnimationFrame(() => hero.classList.toggle('hero-art-out', scrollY > 12));
-  }, {once:true});
+  hero.classList.toggle('hero-art-out', heroWanted);
+  window.addEventListener('tc:reveal', () => { revealed = true; lastY = scrollY; setHeroState(scrollY > 12); }, {once:true});
   window.addEventListener('scroll', queueHero, {passive:true});
-  reduced.addEventListener('change', queueHero);
+  reduced.addEventListener('change', () => { clearTimeout(heroTimer); heroBusy=false; queueHero(); });
 
   const facility = document.querySelector('.facility');
   if (facility) {
     const layer = facility.querySelector('.facility-courts');
     const courts = [...layer.querySelectorAll('.facility-court')];
     const clamp = value => Math.max(0, Math.min(1, value));
-    const smooth = value => { const t = clamp(value); return t*t*(3-2*t); };
     let courtFrame = 0;
     facility.classList.add('court-motion-ready');
     function paintCourts() {
@@ -112,20 +115,21 @@
         return {court, top:rect.top-shift, height:rect.height};
       });
       for (const {court,top,height} of geometry) {
-        const enter = clamp((vh*.92-top)/Math.min(vh*.52,height+vh*.18));
-        const leave = clamp((top+height-vh*.08)/Math.min(vh*.36,height+vh*.06));
-        const progress = reduced.matches ? 1 : Math.min(enter,leave);
+        const wasVisible = court.classList.contains('is-court-visible');
+        // A small hysteresis band prevents edge chatter. CSS owns delay/duration.
+        const visible = reduced.matches || (wasVisible
+          ? top < vh*.98 && top+height > vh*.02
+          : top < vh*.9 && top+height > vh*.1);
+        court.classList.toggle('is-court-visible', visible);
         const travel = clamp((vh-top)/(vh+height));
-        court.style.setProperty('--court-dash', (1-smooth(progress/.75)).toFixed(4));
-        court.style.setProperty('--court-fill', smooth((progress-.5)/.5).toFixed(4));
         court.style.setProperty('--court-y', (reduced.matches ? 0 : (0.5-travel)*32).toFixed(2)+'px');
       }
     }
     function queueCourts() { if (!courtFrame) courtFrame=requestAnimationFrame(paintCourts); }
     function sizeCourts() {
       // Original viewBox widths: 53, 46 and 48.1 units. The shared scale also
-      // reserves a vertical gap between the right-hand courts at every width.
-      const unit = Math.min(8,facility.clientWidth/145,facility.offsetHeight/190);
+      // grows every court by 25% while preserving the original relative dimensions.
+      const unit = Math.min(8,facility.clientWidth/145,facility.offsetHeight/190)*1.25;
       layer.style.setProperty('--court-unit', unit.toFixed(4)+'px');
       queueCourts();
     }

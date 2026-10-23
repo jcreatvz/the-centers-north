@@ -48,28 +48,27 @@
 .marquee-toggle[aria-pressed=true] .marquee-play{display:block}
 .marquee-toggle[aria-pressed=true] .marquee-pause{display:none}
 
-/* Brand fragments slide in from opposite corners, clipped to the hero. */
-.hero-content>h1,.hero-content>.hero-bottom{position:relative;z-index:1}
+/* One corner, layered across the complete hero including its footer. */
+.hero-content,.hero-foot,.hero-top{position:relative;z-index:1}
 .hero-corner-art{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.hero-corner{position:absolute;display:block;height:auto;transition:transform .75s var(--v2-ease);will-change:transform}
-.hero-corner--swoop{width:clamp(210px,33vw,500px);left:0;right:auto;top:-5%;fill:var(--hero-swoop-color)}
-.hero-corner--opposite{left:auto;right:0;top:auto;bottom:-5%;fill:var(--hero-opposite-color);transform:rotate(180deg)}
-.hero-art-out .hero-corner--swoop,.tc-intro-wait .hero-corner--swoop{transform:translate3d(-100%,-80%,0)}
-.hero-art-out .hero-corner--opposite,.tc-intro-wait .hero-corner--opposite{transform:translate3d(100%,80%,0) rotate(180deg)}
+.hero-corner{position:absolute;display:block;height:auto;will-change:transform;transition:transform 700ms cubic-bezier(.4,0,.2,1)}
+.hero-corner--opposite{width:clamp(210px,33vw,500px);right:-50px;bottom:-50px;fill:var(--hero-opposite-color);transform:translate3d(0,0,0) rotate(180deg)}
+.hero-art-out .hero-corner--opposite,.tc-intro-wait .hero-corner--opposite{transform:translate3d(110%,100%,0) rotate(180deg)}
 
-/* The court artwork sits below every content layer and cannot intercept input. */
 .facility{position:relative;isolation:isolate;overflow:hidden}
 .facility> :not(.facility-courts){position:relative;z-index:1}
-.facility-courts{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-/* One CSS pixel scale per original SVG unit preserves ALL relative court dimensions.
-   Opposite sides and height-limited scale keep their bounds apart, including parallax. */
-.facility-courts{--court-unit:clamp(1.5px,.45vw,6px)}
-.facility-court{position:absolute;height:auto;opacity:.16;overflow:visible;color:#fff;transform:translate3d(0,var(--court-y,0px),0)}
-.facility-court--volleyball{width:calc(46 * var(--court-unit));right:6%;top:4%}
-.facility-court--pickleball{width:calc(53 * var(--court-unit));left:-2%;top:40%}
-.facility-court--basketball{width:calc(48.1 * var(--court-unit));right:3%;bottom:-2%}
+.facility-stats strong,.facility h2 span{color:var(--paper)}
+.facility-courts{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;--court-unit:5px}
+.facility-court{position:absolute;height:auto;opacity:.14;overflow:visible;color:#fff;transform:translate3d(0,var(--court-y,0px),0)}
+.facility-court--volleyball{width:calc(46 * var(--court-unit));left:-5%}
+.court-volleyball-1{top:2%}.court-volleyball-2{top:55%}
+.facility-court--pickleball{width:calc(53 * var(--court-unit));left:37%}
+.court-pickleball-1{top:0}.court-pickleball-2{top:38%}.court-pickleball-3{top:76%}
+.facility-court--basketball{width:calc(48.1 * var(--court-unit));right:-5%;top:25%}
 .facility-court path{fill:currentColor;stroke:currentColor;stroke-width:.2;stroke-linejoin:round;fill-opacity:1}
-.court-motion-ready .facility-court path{stroke-dasharray:1;stroke-dashoffset:var(--court-dash,1);fill-opacity:var(--court-fill,0)}
+.court-motion-ready .facility-court path{stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;transition:stroke-dashoffset 700ms cubic-bezier(.4,0,.2,1) 300ms,fill-opacity 700ms cubic-bezier(.4,0,.2,1) 300ms}
+.court-motion-ready .facility-court.is-court-visible path{stroke-dashoffset:0;fill-opacity:1}
+#sports .so-ball-target::after{border-width:3px}
 
 .interest-options [data-interest=basketball]{--interest-color:var(--orange)}
 .interest-options [data-interest=volleyball]{--interest-color:var(--pink)}
@@ -87,12 +86,13 @@
   #sports .sports-orbit-home .so-sport-chip{flex:1;min-width:0;padding-inline:8px;font-size:clamp(10px,2.8vw,12px)}
 }
 @media(max-width:760px){
-  .hero-corner--swoop{width:65vw;left:0;right:auto;top:2%}
-  .hero-corner--opposite{left:auto;right:0;top:auto;bottom:-4%}
+  .hero-corner--opposite{width:65vw}
   .facility-court{opacity:.12}
-  .facility-court--volleyball{right:5%;top:3%}
-  .facility-court--pickleball{left:-8%;top:43%}
-  .facility-court--basketball{right:5%;bottom:2%}
+  .facility-court--volleyball{left:-9%}
+  .court-volleyball-1{top:1%}.court-volleyball-2{top:65%}
+  .facility-court--pickleball{left:auto;right:-8%}
+  .court-pickleball-1{top:4%}.court-pickleball-2{top:35%}.court-pickleball-3{top:79%}
+  .facility-court--basketball{left:-10%;right:auto;top:30%}
 }
 @media(prefers-reduced-motion:reduce){
   #sports .so-detail-drift{animation:none;transform:none;translate:none;transition:none}
@@ -102,3 +102,36 @@
   .court-motion-ready .facility-court path{stroke-dashoffset:0;fill-opacity:1;transition:none}
   #sports .has-slider::before,.signup-form .interest-options span::before{transition:none!important}
 }
+
+/* The draft's anchor controller handles timing without Webflow/CSS scroll stacking. */
+html{scroll-behavior:auto!important}
+.sports-dropdown{position:relative}
+.sports-nav-trigger,.sports-popover button{appearance:none;border:0;background:none;font:inherit;color:inherit;cursor:pointer}
+.sports-nav-trigger{display:flex;align-items:center;gap:9px;padding:12px 0;text-transform:capitalize;font-size:14px;font-weight:600}
+.nav-chevron{display:inline-block;flex:none;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg)}
+.sports-nav-trigger>.nav-chevron{transform:rotate(45deg);transition:transform .2s}
+.sports-nav-trigger[aria-expanded=true]>.nav-chevron{transform:rotate(225deg)}
+.sports-popover,.sports-subpopover{position:absolute;padding:10px;background:var(--paper);border:1px solid #102b2614;border-radius:22px;box-shadow:0 14px 40px #102b261a;animation:nav-bubble-in .22s var(--v2-ease);color:var(--ink);}
+.sports-popover{top:100%;left:-18px;width:220px}
+.sports-subgroup{position:relative}
+.sports-subpopover{left:calc(100% + 8px);top:-10px;width:290px}
+.sports-subpopover::before{content:'';position:absolute;right:100%;top:0;width:20px;height:100%}
+.desktop-nav .sports-popover :is(a,button,.nav-pending){display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:11px 14px;border-radius:13px;font:600 14px/1.35 Satoshi,Arial,sans-serif;letter-spacing:0;text-transform:none;text-decoration:none;white-space:normal}
+.desktop-nav .sports-popover :is(a,button):hover,.desktop-nav .sports-popover button[aria-expanded=true]{background:#00857a12;color:var(--teal)}
+.nav-pending{cursor:default}
+.sports-dropdown [hidden],.mobile-nav [hidden]{display:none!important}
+.sports-dropdown :focus-visible,.mobile-nav button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+@keyframes nav-bubble-in{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:1050px){
+ .mobile-nav-page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+ .mobile-nav .mobile-step-link{display:flex;align-items:center;gap:18px;background:none;border:0;padding:6px 0;color:var(--ink);font:700 clamp(28px,6vw,60px)/1.15 Satoshi,Arial,sans-serif;letter-spacing:-.04em;text-transform:capitalize;cursor:pointer}
+ .mobile-step-link .nav-chevron{width:11px;height:11px}
+ .mobile-nav .mobile-nav-page a{opacity:1;transform:none;transition:color .2s;transition-delay:0s}
+ .mobile-nav .mobile-nav-back{display:flex;align-items:center;gap:12px;padding:10px 0;margin-bottom:16px;background:none;border:0;color:var(--teal);font:600 15px/1.4 Satoshi,Arial,sans-serif;cursor:pointer}
+ .mobile-nav-back .nav-chevron{transform:rotate(135deg)}
+ .mobile-page-title{font:700 clamp(26px,5vw,42px)/1.2 Satoshi,Arial,sans-serif;letter-spacing:-.03em;margin:0 0 16px}
+ .mobile-nav .nav-pending{display:block;font:600 clamp(17px,3.8vw,27px)/1.35 Satoshi,Arial,sans-serif;padding:8px 0;letter-spacing:-.015em}
+ .mobile-nav .mobile-step-link:hover{color:var(--teal)}
+ .mobile-nav-page[data-page=main]{gap:5px}
+}
+@media(prefers-reduced-motion:reduce){.sports-popover,.sports-subpopover{animation:none}}

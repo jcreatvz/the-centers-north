@@ -11,7 +11,7 @@
  function setMenu(next,restoreFocus=false){
    if(closing||next===open)return;
    if(!next){beginMenuClose({restoreFocus});return}
-   open=true;clearTimeout(closeTimer);
+   open=true;clearTimeout(closeTimer);window.tcResetMobileNav?.();
    toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close navigation');
    menu.inert=false;oldOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
    menu.hidden=false;menu.getBoundingClientRect();header.classList.add('menu-open');
@@ -27,7 +27,7 @@
    if(!open||closing)return;
    if(event.key==='Escape'){event.preventDefault();beginMenuClose({restoreFocus:true})}
    if(event.key==='Tab'){
-     const focusable=[header.querySelector('.brand'),toggle,...links];
+     const focusable=[header.querySelector('.brand'),toggle,...menu.querySelectorAll('a[href],button:not([disabled])')].filter(el=>el.getClientRects().length&&!el.closest('[hidden]'));
      let i=focusable.indexOf(document.activeElement);i=(i+(event.shiftKey?-1:1)+focusable.length)%focusable.length;
      event.preventDefault();focusable[i].focus();
    }
@@ -108,7 +108,8 @@
    const finishDrawer=()=>{
      header.classList.remove('menu-open');document.body.style.overflow=oldOverflow;
      document.querySelector('main').inert=false;document.querySelector('footer').inert=false;
-     closeTimer=setTimeout(()=>{menu.hidden=true;closing=false;if(destination)location.assign(destination)},reduced.matches?0:650);
+     if(destination)(window.tcNavigate||((url)=>location.assign(url)))(destination);
+     closeTimer=setTimeout(()=>{menu.hidden=true;closing=false;window.tcResetMobileNav?.()},reduced.matches?0:650);
    };
    const exit=()=>reverseNavSwoop().then(finishDrawer);
    if(link&&!reduced.matches)throwBallAt(link).then(exit,exit);else exit();
