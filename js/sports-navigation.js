@@ -58,6 +58,7 @@
     const show=()=>{closeSubs();panel.hidden=false;button.setAttribute('aria-expanded','true');};
     button.addEventListener('click',show);
     group.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')show();});
+    group.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')closeSubs();});
     button.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();show();}});
   });
   dropdown.addEventListener('keydown',e=>{

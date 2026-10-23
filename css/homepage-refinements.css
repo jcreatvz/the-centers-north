@@ -55,11 +55,12 @@
 .hero-corner--opposite{width:clamp(210px,33vw,500px);right:-50px;bottom:-50px;fill:var(--hero-opposite-color);transform:translate3d(0,0,0) rotate(180deg)}
 .hero-art-out .hero-corner--opposite,.tc-intro-wait .hero-corner--opposite{transform:translate3d(110%,100%,0) rotate(180deg)}
 
-.facility{position:relative;isolation:isolate;overflow:hidden}
+.facility{position:relative;isolation:isolate;overflow:hidden;background:var(--deep);background:radial-gradient(circle,rgb(0 71 65) 0%,rgba(0,0,0,1) 79%,rgb(0 61 56) 100%)}
 .facility> :not(.facility-courts){position:relative;z-index:1}
 .facility-stats strong,.facility h2 span{color:var(--paper)}
+.facility-stats{border-top:1px solid #fff;border-bottom:1px solid #fff}
 .facility-courts{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;--court-unit:5px}
-.facility-court{position:absolute;height:auto;opacity:.14;overflow:visible;color:#fff;transform:translate3d(0,var(--court-y,0px),0)}
+.facility-court{position:absolute;height:auto;opacity:.05;overflow:visible;color:#fff;transform:translate3d(0,var(--court-y,0px),0)}
 /* Measured masonry positions preserve the original SVG-unit scale. */
 .facility-court{left:var(--court-x,0px);top:var(--court-top,0px)}
 .facility-court--volleyball{width:calc(46 * var(--court-unit))}
@@ -87,7 +88,7 @@
 }
 @media(max-width:760px){
   .hero-corner--opposite{width:65vw}
-  .facility-court{opacity:.12}
+  .facility-court{opacity:.05}
 
 }
 @media(prefers-reduced-motion:reduce){
