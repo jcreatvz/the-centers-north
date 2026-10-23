@@ -127,10 +127,38 @@
     }
     function queueCourts() { if (!courtFrame) courtFrame=requestAnimationFrame(paintCourts); }
     function sizeCourts() {
-      // Original viewBox widths: 53, 46 and 48.1 units. The shared scale also
-      // grows every court by 25% while preserving the original relative dimensions.
-      const unit = Math.min(8,facility.clientWidth/145,facility.offsetHeight/190)*1.25;
-      layer.style.setProperty('--court-unit', unit.toFixed(4)+'px');
+      // Two/three interleaved columns, measured in the source SVG's units.
+      const width=facility.clientWidth, height=facility.offsetHeight;
+      const narrow=width<=760, gap=narrow?28:Math.max(32,Math.min(56,width*.035));
+      const edge=narrow?16:Math.max(24,width*.025);
+      const groups=narrow
+        ? [['pickleball-1','volleyball-1','pickleball-2','basketball-1'],['basketball-2','pickleball-3','volleyball-2','pickleball-4']]
+        : [['volleyball-1','basketball-1'],['pickleball-1','volleyball-2','pickleball-2'],['basketball-2','pickleball-3','pickleball-4']];
+      const cols=groups.map(group=>group.map(key=>layer.querySelector('.court-'+key)));
+      const box=court=>court.getAttribute('viewBox').split(/\s+/).map(Number);
+      const colWidth=(width-edge*2-gap*(cols.length-1))/cols.length;
+      const offset=narrow?24:40, verticalGap=40; // includes room for the 32px parallax travel
+      let unit=Math.min(8,width/145,height/190)*1.25;
+      unit=Math.min(unit,colWidth/53);
+      cols.forEach((col,i)=>{
+        const units=col.reduce((sum,c)=>sum+box(c)[3],0);
+        unit=Math.min(unit,(height-edge*2-offset-verticalGap*(col.length-1))/units);
+      });
+      unit=Math.max(.5,unit);
+      layer.style.setProperty('--court-unit',unit.toFixed(4)+'px');
+      cols.forEach((col,i)=>{
+        const start=edge+(i%2?offset:0), bottom=edge+(i%2?0:offset);
+        const total=col.reduce((sum,c)=>sum+box(c)[3]*unit,0);
+        const space=Math.max(verticalGap,(height-start-bottom-total)/(col.length-1));
+        let y=start;
+        col.forEach((court,j)=>{
+          const [, , w,h]=box(court);
+          court.style.setProperty('--court-x',(edge+i*(colWidth+gap)+(colWidth-w*unit)/2).toFixed(2)+'px');
+          court.style.setProperty('--court-top',y.toFixed(2)+'px');
+          court.style.setProperty('--court-delay',(300+i*90+j*60)+'ms');
+          y+=h*unit+space;
+        });
+      });
       queueCourts();
     }
     new ResizeObserver(sizeCourts).observe(facility);

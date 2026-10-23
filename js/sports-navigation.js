@@ -62,7 +62,7 @@
   });
   dropdown.addEventListener('keydown',e=>{
     if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeDesktop();trigger.focus();}
-    if(e.key==='ArrowDown'&&e.target===trigger){e.preventDefault();openDesktop();popup.querySelector('a').focus();}
+    if(e.key==='ArrowDown'&&e.target===trigger){e.preventDefault();openDesktop();popup.querySelector('button,a').focus();}
     if(e.key==='ArrowLeft'){closeSubs();}
   });
   dropdown.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(!dropdown.contains(document.activeElement))closeDesktop();}));
@@ -70,20 +70,28 @@
   mobile.addEventListener('change',closeDesktop);
 
   const menu=document.querySelector('.mobile-nav');
-  let current='main', pageAnimation=null;
+  let current='main', pageAnimations=[];
+  function animatePage(page,delay=0){
+    pageAnimations.forEach(a=>a.cancel());pageAnimations=[];
+    if(reduced.matches)return;
+    [...page.children].forEach((el,i)=>{
+      const animation=el.animate([{opacity:0,transform:'translate3d(-30px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],{duration:500,delay:delay+i*65,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
+      pageAnimations.push(animation);
+    });
+  }
   const pages=[...menu.querySelectorAll('.mobile-nav-page')];
   function showPage(name,focus=true){
     const next=pages.find(p=>p.dataset.page===name);if(!next)return;
-    const backwards=name==='main'||(name==='sports'&&current!=='main');
-    pageAnimation?.cancel();current=name;
+    pageAnimations.forEach(a=>a.cancel());pageAnimations=[];current=name;
     pages.forEach(p=>{p.hidden=p!==next;p.inert=p!==next;});
     menu.querySelectorAll('[data-nav-page][aria-expanded]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.navPage===name)));
-    if(!reduced.matches)pageAnimation=next.animate([{opacity:0,transform:`translateX(${backwards?-18:24}px) scale(.98)`},{opacity:1,transform:'none'}],{duration:280,easing:'cubic-bezier(.22,1,.36,1)'});
+    if(focus&&!menu.hidden)animatePage(next);
     menu.scrollTop=0;
     if(focus)next.querySelector('button,a')?.focus({preventScroll:true});
   }
   menu.addEventListener('click',e=>{const button=e.target.closest('[data-nav-page]');if(button)showPage(button.dataset.navPage);});
   menu.addEventListener('keydown',e=>{if(e.key==='Escape'&&current!=='main'){e.preventDefault();e.stopPropagation();showPage(current==='sports'?'main':'sports');}});
   window.tcResetMobileNav=()=>showPage('main',false);
+  window.tcOpenMobileNav=()=>animatePage(pages.find(p=>p.dataset.page===current),180);
   showPage('main',false);
 })();

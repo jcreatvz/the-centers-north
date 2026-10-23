@@ -14,13 +14,15 @@
    open=true;clearTimeout(closeTimer);window.tcResetMobileNav?.();
    toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label','Close navigation');
    menu.inert=false;oldOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
-   menu.hidden=false;menu.getBoundingClientRect();header.classList.add('menu-open');
+   menu.hidden=false;menu.getBoundingClientRect();header.classList.add('menu-open');window.tcOpenMobileNav?.();
    document.querySelector('main').inert=true;document.querySelector('footer').inert=true;
    setTimeout(()=>{if(open&&!closing)playNavSwoop()},150);
  }
  toggle.addEventListener('click',()=>setMenu(!open));
  links.forEach(link=>link.addEventListener('click',event=>{
    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+   // Let the browser open supplied new-tab links during the user gesture.
+   if(link.target==='_blank'){beginMenuClose({link});return;}
    event.preventDefault();beginMenuClose({link,destination:link.href});
  }));
  document.addEventListener('keydown',event=>{
