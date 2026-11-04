@@ -70,33 +70,6 @@
     });
   }
 
-  const hero = document.querySelector('.hero');
-  let revealed = !window.__tcIntroPending, lastY = scrollY, trend = 0, heroFrame = 0;
-  let heroBusy = false, heroTimer = 0, heroWanted = !revealed || scrollY > 12;
-  function setHeroState(out) {
-    heroWanted = out;
-    if (heroBusy || hero.classList.contains('hero-art-out') === out) return;
-    hero.classList.toggle('hero-art-out', out);
-    if (reduced.matches) return;
-    // Finish each 700ms slide. Rapid direction changes queue only the latest state.
-    heroBusy = true;
-    clearTimeout(heroTimer);
-    heroTimer = setTimeout(() => { heroBusy = false; setHeroState(heroWanted); }, 700);
-  }
-  function heroMotion() {
-    heroFrame = 0;
-    const y = Math.max(0, scrollY), delta = y-lastY; lastY = y;
-    if (Math.sign(delta) !== Math.sign(trend)) trend = delta; else trend += delta;
-    if (!revealed) return;
-    if (y <= 12) { setHeroState(false); trend = 0; }
-    else if (Math.abs(trend) > 24) { setHeroState(trend > 0 || hero.getBoundingClientRect().bottom <= 0); trend = 0; }
-  }
-  const queueHero = () => { if (!heroFrame) heroFrame = requestAnimationFrame(heroMotion); };
-  hero.classList.toggle('hero-art-out', heroWanted);
-  window.addEventListener('tc:reveal', () => { revealed = true; lastY = scrollY; setHeroState(scrollY > 12); }, {once:true});
-  window.addEventListener('scroll', queueHero, {passive:true});
-  reduced.addEventListener('change', () => { clearTimeout(heroTimer); heroBusy=false; queueHero(); });
-
   const facility = document.querySelector('.facility');
   if (facility) {
     const layer = facility.querySelector('.facility-courts');

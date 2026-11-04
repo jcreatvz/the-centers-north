@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "source": "hero-swoops-anim.svg",
+  "timing": {
+    "a": 900,
+    "b": 800,
+    "h": 1000,
+    "s": 0
+  },
+  "entranceBezier": [
+    0.24,
+    0.7,
+    0.36,
+    1
+  ],
+  "exitBezier": [
+    0.65,
+    0,
+    0.35,
+    0
+  ],
+  "color": "#00857a",
+  "aspectRatios": [
+    {
+      "name": "Wide \u00b7 21:9",
+      "w": 2100,
+      "h": 900,
+      "scale": 1.94,
+      "inset": -73,
+      "offset": 0
+    },
+    {
+      "name": "Desktop \u00b7 16:9",
+      "w": 1600,
+      "h": 900,
+      "scale": 2,
+      "inset": -92,
+      "offset": 0
+    },
+    {
+      "name": "Tablet \u00b7 4:3",
+      "w": 1200,
+      "h": 900,
+      "scale": 2,
+      "inset": -20,
+      "offset": 0
+    },
+    {
+      "name": "Mobile \u00b7 9:16",
+      "w": 390,
+      "h": 693.333,
+      "scale": 2,
+      "inset": 280,
+      "offset": -3
+    }
+  ]
+}

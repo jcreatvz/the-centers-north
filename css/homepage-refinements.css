@@ -48,12 +48,11 @@
 .marquee-toggle[aria-pressed=true] .marquee-play{display:block}
 .marquee-toggle[aria-pressed=true] .marquee-pause{display:none}
 
-/* One corner, layered across the complete hero including its footer. */
+/* SVG fill animation stays behind content and inside the complete hero. */
+.hero{isolation:isolate;overflow:hidden}
 .hero-content,.hero-foot,.hero-top{position:relative;z-index:1}
 .hero-corner-art{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.hero-corner{position:absolute;display:block;height:auto;will-change:transform;transition:transform 700ms cubic-bezier(.4,0,.2,1)}
-.hero-corner--opposite{width:clamp(210px,33vw,500px);right:-50px;bottom:-50px;fill:var(--hero-opposite-color);transform:translate3d(0,0,0) rotate(180deg)}
-.hero-art-out .hero-corner--opposite,.tc-intro-wait .hero-corner--opposite{transform:translate3d(110%,100%,0) rotate(180deg)}
+.hero-swoops{display:block;width:100%;height:100%;overflow:hidden}
 
 .facility{position:relative;isolation:isolate;overflow:hidden;background:var(--deep);background:radial-gradient(circle,rgb(0 71 65) 0%,rgba(0,0,0,1) 79%,rgb(0 61 56) 100%)}
 .facility> :not(.facility-courts){position:relative;z-index:1}
