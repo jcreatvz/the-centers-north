@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "source": "hero-swoops-anim.svg",
   "timing": {
     "a": 900,
@@ -27,7 +27,8 @@
       "h": 900,
       "scale": 1.94,
       "inset": -73,
-      "offset": 0
+      "offset": 0,
+      "gap": -350
     },
     {
       "name": "Desktop \u00b7 16:9",
@@ -35,7 +36,8 @@
       "h": 900,
       "scale": 2,
       "inset": -92,
-      "offset": 0
+      "offset": 0,
+      "gap": -285
     },
     {
       "name": "Tablet \u00b7 4:3",
@@ -43,7 +45,8 @@
       "h": 900,
       "scale": 2,
       "inset": -20,
-      "offset": 0
+      "offset": 0,
+      "gap": -225
     },
     {
       "name": "Mobile \u00b7 9:16",
@@ -51,7 +54,15 @@
       "h": 693.333,
       "scale": 2,
       "inset": 280,
-      "offset": -3
+      "offset": -3,
+      "gap": -195
     }
-  ]
+  ],
+  "transform": {
+    "origin": "pair-center",
+    "startScale": 2.5,
+    "startRotation": 90,
+    "endScale": 1,
+    "endRotation": -45
+  }
 }
