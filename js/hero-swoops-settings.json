@@ -1,9 +1,16 @@
 {
   "version": 2,
+  "transform": {
+    "origin": "pair-center",
+    "startScale": 1.5,
+    "startRotation": 70,
+    "endScale": 0.33,
+    "endRotation": -300
+  },
   "source": "hero-swoops-anim.svg",
   "timing": {
     "a": 900,
-    "b": 800,
+    "b": 900,
     "h": 1000,
     "s": 0
   },
@@ -14,9 +21,9 @@
     1
   ],
   "exitBezier": [
-    0.65,
+    0.2,
     0,
-    0.35,
+    0.2,
     0
   ],
   "color": "#00857a",
@@ -28,7 +35,7 @@
       "scale": 1.94,
       "inset": -73,
       "offset": 0,
-      "gap": -350
+      "gap": 0
     },
     {
       "name": "Desktop \u00b7 16:9",
@@ -37,7 +44,7 @@
       "scale": 2,
       "inset": -92,
       "offset": 0,
-      "gap": -285
+      "gap": 0
     },
     {
       "name": "Tablet \u00b7 4:3",
@@ -46,7 +53,7 @@
       "scale": 2,
       "inset": -20,
       "offset": 0,
-      "gap": -225
+      "gap": 0
     },
     {
       "name": "Mobile \u00b7 9:16",
@@ -55,14 +62,7 @@
       "scale": 2,
       "inset": 280,
       "offset": -3,
-      "gap": -195
+      "gap": 0
     }
-  ],
-  "transform": {
-    "origin": "pair-center",
-    "startScale": 2.5,
-    "startRotation": 90,
-    "endScale": 1,
-    "endRotation": -45
-  }
+  ]
 }
